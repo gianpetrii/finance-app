@@ -7,7 +7,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const initialCards = [
+type CardType = {
+  id: number;
+  name: string;
+  number: string;
+  expiry: string;
+  type: string;
+  balance: number;
+  limit?: number;
+}
+
+type NewCardType = {
+  name: string;
+  number: string;
+  expiry: string;
+  type: string;
+  balance: string;
+  limit: string;
+}
+
+const initialCards: CardType[] = [
   {
     id: 1,
     name: "Tarjeta de Crédito Principal",
@@ -21,12 +40,25 @@ const initialCards = [
 ]
 
 export default function CardManagement() {
-  const [cards, setCards] = useState(initialCards)
-  const [newCard, setNewCard] = useState({ name: "", number: "", expiry: "", type: "", balance: "", limit: "" })
+  const [cards, setCards] = useState<CardType[]>(initialCards)
+  const [newCard, setNewCard] = useState<NewCardType>({ name: "", number: "", expiry: "", type: "", balance: "", limit: "" })
 
   const handleAddCard = (e: React.FormEvent) => {
     e.preventDefault()
-    setCards([...cards, { ...newCard, id: Date.now() }])
+    const cardToAdd: CardType = {
+      id: Date.now(),
+      name: newCard.name,
+      number: newCard.number,
+      expiry: newCard.expiry,
+      type: newCard.type,
+      balance: parseFloat(newCard.balance) || 0,
+    }
+    
+    if (newCard.type === "credit" && newCard.limit) {
+      cardToAdd.limit = parseFloat(newCard.limit) || 0
+    }
+    
+    setCards([...cards, cardToAdd])
     setNewCard({ name: "", number: "", expiry: "", type: "", balance: "", limit: "" })
   }
 
