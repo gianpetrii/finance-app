@@ -30,17 +30,20 @@ const services = [
 
 export default function Services() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Services</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-8">
+      <div className="mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Services</h1>
+      </div>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {services.map((service) => (
-          <Card key={service.id}>
+          <Card key={service.id} className="border border-border/50 shadow-sm">
             <CardHeader>
               <CardTitle>{service.name}</CardTitle>
               <CardDescription>{service.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Status: {service.status}</p>
+              <p>Status: <span className={service.status === "Active" ? "text-green-500" : "text-red-500"}>{service.status}</span></p>
             </CardContent>
             <CardFooter>
               <Button variant={service.status === "Active" ? "outline" : "default"}>

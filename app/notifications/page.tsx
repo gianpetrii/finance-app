@@ -28,15 +28,19 @@ const notifications = [
 
 export default function Notifications() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Notifications</h1>
-      <div className="space-y-4">
+    <div className="space-y-8">
+      <div className="mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Notifications</h1>
+      </div>
+      
+      <div className="space-y-6">
         {notifications.map((notification) => (
-          <Card key={notification.id}>
+          <Card key={notification.id} className={`border border-border/50 shadow-sm ${notification.read ? 'bg-muted/30' : ''}`}>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Bell className="mr-2 h-4 w-4" />
+                <Bell className={`mr-2 h-4 w-4 ${notification.read ? 'text-muted-foreground' : 'text-primary'}`} />
                 {notification.title}
+                {!notification.read && <span className="ml-2 h-2 w-2 rounded-full bg-primary"></span>}
               </CardTitle>
               <CardDescription>{notification.date}</CardDescription>
             </CardHeader>

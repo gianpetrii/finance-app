@@ -33,13 +33,12 @@ export default function Dashboard() {
   }, [saldoActual, creditoAPagar])
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="space-y-8">
+      <div className="mb-4">
         <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
-        <div className="h-1 w-24 bg-primary/20 rounded-full"></div>
       </div>
-
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <IngresoMensual onIngresoChange={setIngresoMensual} />
         <AhorroMensual ingresoMensual={ingresoMensual} />
         <GastosFijos />

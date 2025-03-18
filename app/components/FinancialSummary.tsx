@@ -13,7 +13,6 @@ export function FinancialSummary({ children, title = "Resumen" }: FinancialSumma
         <div className="flex items-center gap-3">
           <ChartPieIcon className="h-6 w-6 text-primary/70" />
           <h2 className="text-xl font-bold">{title}</h2>
-          <div className="h-1 w-20 bg-primary/20 rounded-full"></div>
         </div>
         <div className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
           Actualizado hoy

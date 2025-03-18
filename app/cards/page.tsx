@@ -63,11 +63,14 @@ export default function CardManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Gestión de Tarjetas</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-8">
+      <div className="mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Tarjetas</h1>
+      </div>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
-          <Card key={card.id}>
+          <Card key={card.id} className="border border-border/50 shadow-sm">
             <CardHeader>
               <CardTitle>{card.name}</CardTitle>
               <CardDescription>{card.number}</CardDescription>
@@ -84,11 +87,15 @@ export default function CardManagement() {
           </Card>
         ))}
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Agregar Nueva Tarjeta</CardTitle>
+      
+      <Card className="border border-border/50 shadow-sm">
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary"></span>
+            Agregar Nueva Tarjeta
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <form onSubmit={handleAddCard} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="cardName">Nombre de la Tarjeta</Label>
