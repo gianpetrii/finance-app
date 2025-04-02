@@ -7,22 +7,79 @@ import { cn } from "@/lib/utils"
 import { format, getDaysInMonth, isToday, isSameDay, startOfMonth } from "date-fns"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Info } from "lucide-react"
+import { ChevronLeft, ChevronRight, ArrowUpCircle, ArrowDownCircle, Info, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { NewTransactionDialog, Transaction } from "../components/NewTransactionDialog"
 
 // Datos de ejemplo - En una aplicación real, estos vendrían de tu base de datos
 const limiteGastoDiario = 200;
 // Actualizado para incluir datos del mes actual
 const currentMonth = new Date().getMonth();
 const currentYear = new Date().getFullYear();
-const gastosMock = {
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`]: 150,
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-02`]: 220,
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`]: 300,
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-10`]: 90,
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`]: 180,
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-20`]: 210,
-  [`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-25`]: 120,
+
+// Simulación de datos iniciales
+const initialTransactions: Transaction[] = [
+  {
+    id: "1",
+    date: new Date(currentYear, currentMonth, 1),
+    type: "expense",
+    amount: 150,
+    description: "Compras en supermercado",
+    category: "Alimentación"
+  },
+  {
+    id: "2",
+    date: new Date(currentYear, currentMonth, 2),
+    type: "expense",
+    amount: 220,
+    description: "Cena en restaurante",
+    category: "Ocio"
+  },
+  {
+    id: "3",
+    date: new Date(currentYear, currentMonth, 5),
+    type: "expense",
+    amount: 300,
+    description: "Reparación del coche",
+    category: "Transporte"
+  },
+  {
+    id: "4",
+    date: new Date(currentYear, currentMonth, 10),
+    type: "income",
+    amount: 1000,
+    description: "Pago parcial",
+    category: "Salario"
+  },
+  {
+    id: "5",
+    date: new Date(currentYear, currentMonth, 15),
+    type: "expense",
+    amount: 180,
+    description: "Compra ropa",
+    category: "Ropa"
+  },
+  {
+    id: "6",
+    date: new Date(currentYear, currentMonth, 20),
+    type: "expense",
+    amount: 210,
+    description: "Factura electricidad",
+    category: "Servicios"
+  },
+  {
+    id: "7",
+    date: new Date(currentYear, currentMonth, 25),
+    type: "expense",
+    amount: 120,
+    description: "Farmacia",
+    category: "Salud"
+  }
+];
+
+// Función para generar un ID único
+const generateId = () => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 };
 
 export default function DailyExpensesPage() {
@@ -30,11 +87,41 @@ export default function DailyExpensesPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [monthlySpent, setMonthlySpent] = useState(0);
   const [remainingBudget, setRemainingBudget] = useState(0);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDayTransactions, setSelectedDayTransactions] = useState<Transaction[]>([]);
   
   // Obtener gastos para el día seleccionado
   const getExpenseForDay = (date: Date): number => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    return gastosMock[formattedDate] || 0;
+    if (!date) return 0;
+    
+    const dailyTransactions = transactions.filter(t => 
+      t.date.getDate() === date.getDate() && 
+      t.date.getMonth() === date.getMonth() && 
+      t.date.getFullYear() === date.getFullYear()
+    );
+    
+    const expenses = dailyTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    return expenses;
+  };
+
+  // Función para seleccionar un día
+  const handleSelectDate = (date: Date | undefined) => {
+    setSelectedDate(date);
+    
+    if (date) {
+      const dailyTransactions = transactions.filter(t => 
+        t.date.getDate() === date.getDate() && 
+        t.date.getMonth() === date.getMonth() && 
+        t.date.getFullYear() === date.getFullYear()
+      );
+      setSelectedDayTransactions(dailyTransactions);
+    } else {
+      setSelectedDayTransactions([]);
+    }
   };
   
   // Calcular estadísticas mensuales
@@ -43,16 +130,16 @@ export default function DailyExpensesPage() {
     const today = new Date();
     const daysPassed = Math.min(today.getDate(), daysInMonth);
     
-    let totalSpent = 0;
+    // Filtrar transacciones del mes actual
+    const monthTransactions = transactions.filter(t => 
+      t.date.getMonth() === currentDate.getMonth() &&
+      t.date.getFullYear() === currentDate.getFullYear()
+    );
     
-    // Calcular gasto total del mes
-    Object.entries(gastosMock).forEach(([dateString, amount]) => {
-      const expenseDate = new Date(dateString);
-      if (expenseDate.getMonth() === currentDate.getMonth() &&
-          expenseDate.getFullYear() === currentDate.getFullYear()) {
-        totalSpent += amount;
-      }
-    });
+    // Calcular gastos
+    const totalSpent = monthTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
     
     setMonthlySpent(totalSpent);
     
@@ -60,7 +147,12 @@ export default function DailyExpensesPage() {
     const budgetUntilToday = limiteGastoDiario * daysPassed;
     setRemainingBudget(budgetUntilToday - totalSpent);
     
-  }, [currentDate]);
+    // Actualizar transacciones del día seleccionado si hay un día seleccionado
+    if (selectedDate) {
+      handleSelectDate(selectedDate);
+    }
+    
+  }, [currentDate, transactions, selectedDate]);
   
   // Navegar por meses
   const navigateMonth = (direction: number) => {
@@ -69,16 +161,21 @@ export default function DailyExpensesPage() {
     setCurrentDate(newDate);
   };
 
+  // Agregar una nueva transacción
+  const handleAddTransaction = (newTransaction: Omit<Transaction, 'id'>) => {
+    const transaction: Transaction = {
+      ...newTransaction,
+      id: generateId()
+    };
+    
+    setTransactions(prev => [...prev, transaction]);
+  };
+
   // Datos para día seleccionado
   const selectedDayExpense = selectedDate ? getExpenseForDay(selectedDate) : 0;
   const selectedDayPercentage = (selectedDayExpense / limiteGastoDiario) * 100;
   const isOverBudget = selectedDayExpense > limiteGastoDiario;
   const remainingDailyBudget = limiteGastoDiario - selectedDayExpense;
-
-  // Función para seleccionar un día
-  const handleSelectDate = (date: Date | undefined) => {
-    setSelectedDate(date);
-  };
 
   return (
     <div className="space-y-8">
@@ -185,14 +282,27 @@ export default function DailyExpensesPage() {
         {/* Detalles del día seleccionado */}
         <Card className="border border-border/50 shadow-sm overflow-hidden">
           <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-primary"></span>
-              {selectedDate ? (
-                <>Detalles del {format(selectedDate, "d 'de' MMMM")}</>
-              ) : (
-                <>Selecciona un día</>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-primary"></span>
+                {selectedDate ? (
+                  <>Detalles del {format(selectedDate, "d 'de' MMMM")}</>
+                ) : (
+                  <>Selecciona un día</>
+                )}
+              </CardTitle>
+              {selectedDate && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-1"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  <span>Nuevo</span>
+                </Button>
               )}
-            </CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="p-6">
             {selectedDate ? (
@@ -263,6 +373,37 @@ export default function DailyExpensesPage() {
                     </AlertDescription>
                   </Alert>
                 )}
+
+                {/* Lista de transacciones del día */}
+                {selectedDayTransactions.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <h3 className="text-sm font-medium">Movimientos del día</h3>
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                      {selectedDayTransactions.map((transaction) => (
+                        <div 
+                          key={transaction.id} 
+                          className={cn(
+                            "p-2 rounded-md text-sm border",
+                            transaction.type === 'expense' 
+                              ? "border-red-200 bg-red-50 dark:bg-red-950/10 dark:border-red-950/50" 
+                              : "border-green-200 bg-green-50 dark:bg-green-950/10 dark:border-green-950/50"
+                          )}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="font-medium">{transaction.description}</span>
+                            <span className={transaction.type === 'expense' ? "text-red-500" : "text-green-500"}>
+                              {transaction.type === 'expense' ? '-' : '+'} 
+                              ${transaction.amount.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {transaction.category}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-[240px] text-muted-foreground">
@@ -315,6 +456,14 @@ export default function DailyExpensesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Diálogo para agregar nuevas transacciones */}
+      <NewTransactionDialog 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
+        onSave={handleAddTransaction} 
+        defaultDate={selectedDate}
+      />
     </div>
   )
 } 
