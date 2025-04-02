@@ -146,19 +146,21 @@ export default function DailyExpensesPage() {
                     return (
                       <div 
                         className={cn(
-                          "relative flex flex-col items-center justify-center h-9 w-full rounded-md p-0 cursor-pointer", 
+                          "relative flex flex-col items-center justify-center h-9 w-full rounded-md cursor-pointer", 
                           props.className,
-                          isToday(date) && "border border-primary",
+                          isToday(date) && "border border-primary bg-primary/5",
                           hasExpense && !overBudget && "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300",
                           overBudget && "bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300",
                         )}
                       >
-                        <span className="text-sm">{format(date, "d")}</span>
-                        {hasExpense && (
-                          <span className="text-[10px] mt-0.5 font-medium">
-                            ${expense}
-                          </span>
-                        )}
+                        <div className="flex flex-col items-center justify-center h-full py-1">
+                          <span className="text-sm leading-none">{format(date, "d")}</span>
+                          {hasExpense && (
+                            <span className="text-[10px] leading-none mt-1 font-medium">
+                              ${expense}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   },
