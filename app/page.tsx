@@ -51,16 +51,28 @@ export default function Dashboard() {
         <MontoDiario monto={montoDiario} />
       </FinancialSummary>
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        <Card className="border border-border/50 shadow-sm overflow-hidden">
+      <Card className="border border-border/50 shadow-sm overflow-hidden">
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary"></span>
+            Gastos Mensuales
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <Overview />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        <Card className="lg:col-span-2 border border-border/50 shadow-sm overflow-hidden">
           <CardHeader className="border-b">
             <CardTitle className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-primary"></span>
-              Gastos Mensuales
+              Transacciones Recientes
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <Overview />
+            <RecentTransactions />
           </CardContent>
         </Card>
         <Card className="border border-border/50 shadow-sm overflow-hidden">
@@ -72,31 +84,6 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="p-6">
             <ExpensePieChart />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border border-border/50 shadow-sm overflow-hidden">
-          <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-primary"></span>
-              Gastos Diarios
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <DailyExpensesCalendar />
-          </CardContent>
-        </Card>
-        <Card className="border border-border/50 shadow-sm overflow-hidden">
-          <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-primary"></span>
-              Transacciones Recientes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <RecentTransactions />
           </CardContent>
         </Card>
       </div>

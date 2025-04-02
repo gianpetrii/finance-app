@@ -3,13 +3,14 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, CreditCard, FileText, Bell, Settings, Menu, X, LogIn, UserPlus } from "lucide-react"
+import { Home, CreditCard, FileText, Bell, Settings, Menu, X, LogIn, UserPlus, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "./ThemeToggle"
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Transacciones", href: "/transactions", icon: FileText },
+  { name: "Gastos Diarios", href: "/daily-expenses", icon: Calendar },
   { name: "Tarjetas", href: "/cards", icon: CreditCard },
   { name: "Servicios", href: "/services", icon: Settings },
   { name: "Notificaciones", href: "/notifications", icon: Bell },
