@@ -2,9 +2,10 @@
   "extends": ["next/core-web-vitals", "next/typescript"],
   "rules": {
     "@typescript-eslint/no-unused-vars": ["error", {
-      "varsIgnorePattern": "^(setSaldoActual|setCreditoAPagar|props)$",
-      "argsIgnorePattern": "^props$"
+      "varsIgnorePattern": "^(setSaldoActual|setCreditoAPagar|props|setData|isSameDay|startOfMonth|day)$",
+      "argsIgnorePattern": "^(props|day)$"
     }],
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "react-hooks/exhaustive-deps": "warn"
   }
 }

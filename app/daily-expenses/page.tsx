@@ -149,7 +149,13 @@ export default function DailyExpensesPage() {
     
     // Actualizar transacciones del día seleccionado si hay un día seleccionado
     if (selectedDate) {
-      handleSelectDate(selectedDate);
+      // En lugar de llamar a handleSelectDate, hacemos la lógica directamente
+      const dailyTransactions = transactions.filter(t => 
+        t.date.getDate() === selectedDate.getDate() && 
+        t.date.getMonth() === selectedDate.getMonth() && 
+        t.date.getFullYear() === selectedDate.getFullYear()
+      );
+      setSelectedDayTransactions(dailyTransactions);
     }
     
   }, [currentDate, transactions, selectedDate]);

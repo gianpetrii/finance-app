@@ -1,8 +1,9 @@
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { useEffect, useState } from "react"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 
-const data = [
+const initialData = [
   {
     name: "Ene",
     total: Math.floor(Math.random() * 5000) + 1000,
@@ -54,20 +55,47 @@ const data = [
 ]
 
 export function Overview() {
+  const [data, setData] = useState(initialData)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Cargando gráfico...</p>
+      </div>
+    )
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data}>
-        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-        <YAxis
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="h-full w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <XAxis 
+            dataKey="name" 
+            stroke="#888888" 
+            fontSize={12} 
+            tickLine={false} 
+            axisLine={false} 
+          />
+          <YAxis
+            stroke="#888888"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `$${value}`}
+          />
+          <Tooltip
+            formatter={(value) => [`$${value}`, "Total"]}
+            labelStyle={{ color: "#888888" }}
+          />
+          <Bar dataKey="total" fill="var(--chart-1, #16a34a)" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
