@@ -56,6 +56,16 @@ export function NewTransactionDialog({ open, onOpenChange, onSave, defaultDate =
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
+  // Actualizar la fecha cuando cambia defaultDate o cuando el diálogo se abre
+  React.useEffect(() => {
+    if (open) {
+      setFormData(prev => ({
+        ...prev,
+        date: format(defaultDate, 'yyyy-MM-dd')
+      }));
+    }
+  }, [defaultDate, open]);
+
   const categories = formData.type === 'income' ? incomeCategories : expenseCategories
 
   // Manejar cambios en los campos del formulario
