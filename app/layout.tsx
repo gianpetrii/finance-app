@@ -4,15 +4,9 @@ import "./globals.css"
 import { Sidebar } from "./components/Sidebar"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import type React from "react"
-import dynamic from 'next/dynamic'
+import { ClientWrapper } from "./components/ClientWrapper"
 
 const inter = Inter({ subsets: ["latin"] })
-
-// Cargar Firebase dinámicamente solo en el cliente
-const FirebaseInitializer = dynamic(
-  () => import('./components/FirebaseInitializer').then(mod => mod.FirebaseInitializer),
-  { ssr: false }
-)
 
 export const metadata: Metadata = {
   title: "Finance App",
@@ -28,7 +22,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <FirebaseInitializer />
+          <ClientWrapper />
           <div className="flex min-h-screen">
             <Sidebar />
             <main className="flex-1 transition-all duration-200">
