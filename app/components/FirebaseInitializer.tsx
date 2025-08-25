@@ -1,13 +1,22 @@
 'use client';
 
 import { useEffect } from 'react';
-import { analytics } from '../lib/firebase';
 
 export function FirebaseInitializer() {
   useEffect(() => {
-    // Firebase ya está inicializado en el archivo firebase.ts
-    // Este componente solo se asegura de que se cargue en el cliente
-    console.log('Firebase initialized', analytics);
+    // Inicializar Firebase Analytics solo en el cliente
+    const initializeFirebase = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const { analytics } = await import('../lib/firebase');
+          console.log('Firebase initialized', analytics);
+        } catch (error) {
+          console.log('Firebase analytics not available:', error);
+        }
+      }
+    };
+    
+    initializeFirebase();
   }, []);
 
   return null; // Este componente no renderiza nada
