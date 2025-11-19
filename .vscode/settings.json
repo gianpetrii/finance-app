@@ -17,5 +17,19 @@
   },
   "css.validate": false,
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  
+  // Mobile-First Development Settings
+  "workbench.startupEditor": "none",
+  "editor.minimap.enabled": false,
+  "breadcrumbs.enabled": true,
+  "editor.wordWrap": "on",
+  "editor.rulers": [375, 768, 1024],
+  
+  // Live Server para mobile testing
+  "liveServer.settings.host": "0.0.0.0",
+  "liveServer.settings.port": 3001,
+  
+  // Snippets y autocompletado mobile-first
+  "editor.suggest.snippetsPreventQuickSuggestions": false
 }
