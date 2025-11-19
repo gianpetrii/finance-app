@@ -1,20 +1,39 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración para Vercel - no usar output: 'export'
-  // Vercel maneja el deployment automáticamente
+  // Optimizaciones de rendimiento
+  reactStrictMode: true,
+  swcMinify: true,
   
   // Configuración para mejorar el HMR en desarrollo
-  webpack: (config) => {
-    config.watchOptions = {
-      poll: 1000,
-      aggregateTimeout: 300,
+  webpack: (config, { dev, isServer }) => {
+    // Optimizar watch en desarrollo
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+        ignored: ['**/node_modules', '**/.next', '**/.git'],
+      };
+    }
+    
+    // Optimizar resolución de módulos
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
     };
+    
     return config;
   },
   
-  // Configuración para imágenes si las usas
+  // Configuración para imágenes
   images: {
     unoptimized: false,
+  },
+  
+  // Optimizar compilación
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
   },
 };
 
