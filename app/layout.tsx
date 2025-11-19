@@ -1,16 +1,63 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Sidebar } from "./components/Sidebar"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import type React from "react"
 import { ClientWrapper } from "./components/ClientWrapper"
+import { Toaster } from "sonner"
+import { ConditionalLayout } from "./components/ConditionalLayout"
+import { Navbar } from "@/components/Navbar"
+import { Footer } from "@/components/Footer"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Finance App",
-  description: "Manage your finances with ease",
+  title: {
+    default: "FinanzApp - Gestiona tus Finanzas de Manera Inteligente",
+    template: "%s | FinanzApp",
+  },
+  description: "Controla tus ingresos, gastos y ahorros de forma simple y efectiva. FinanzApp te ayuda a gestionar tu dinero con herramientas inteligentes y visualizaciones claras.",
+  keywords: ["finanzas personales", "control de gastos", "presupuesto", "ahorro", "gestión financiera", "app de finanzas"],
+  authors: [{ name: "FinanzApp Team" }],
+  creator: "FinanzApp",
+  publisher: "FinanzApp",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://finance-app-three-steel.vercel.app'),
+  openGraph: {
+    title: "FinanzApp - Gestiona tus Finanzas de Manera Inteligente",
+    description: "Controla tus ingresos, gastos y ahorros de forma simple y efectiva.",
+    url: 'https://finance-app-three-steel.vercel.app',
+    siteName: 'FinanzApp',
+    locale: 'es_ES',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "FinanzApp - Gestiona tus Finanzas",
+    description: "Controla tus ingresos, gastos y ahorros de forma simple y efectiva.",
+    creator: '@finanzapp',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/apple-icon.png',
+  },
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({
@@ -23,13 +70,13 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ClientWrapper />
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 transition-all duration-200">
-              <div className="h-full w-full max-w-[1200px] mx-auto px-6 py-6 md:py-8">
-                {children}
-              </div>
-            </main>
+          <Toaster position="top-center" richColors />
+          <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+            <Footer />
           </div>
         </ThemeProvider>
       </body>
