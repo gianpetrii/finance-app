@@ -125,16 +125,38 @@
 
 ---
 
+## 🐛 Correcciones Adicionales
+
+### Calendario Personalizado
+- **Problema**: Al seleccionar "Personalizado" en el filtro, el calendario mostraba los días desalineados (Su de Sunday en columna de miércoles)
+- **Causa**: Falta de configuración de locale español y weekStartsOn
+- **Solución**:
+  - Agregado `locale={es}` y `weekStartsOn={1}` en ambos archivos de calendario
+  - Ajustado ancho de celdas: `w-8` → `w-9` para mejor alineación
+  - Archivos corregidos: `components/ui/calendar.tsx` y `app/components/ui/calendar.tsx`
+
+### Error de Hidratación
+- **Problema**: Error "Text content does not match server-rendered HTML" en fechas
+- **Causa**: El servidor y cliente generaban fechas diferentes debido a timezone
+- **Solución**:
+  - Agregado estado `mounted` en `TimeframeFilter`
+  - Las fechas solo se formatean después del montaje del componente en el cliente
+  - Previene discrepancias entre SSR y CSR
+
+---
+
 ## 📝 Notas Técnicas
 
 - **Performance**: El build es rápido (~10s) gracias a las optimizaciones previas en `tsconfig.json` y `next.config.mjs`
 - **Bundle Size**: La página de settings es ligera (5.27 kB) con un First Load JS de 110 kB
 - **Responsive**: Todos los componentes nuevos son completamente responsive
 - **Accesibilidad**: Formularios con labels apropiados y navegación por teclado
+- **Internacionalización**: Calendario completamente en español con semana comenzando en lunes
 
 ---
 
-**Versión**: 1.3.0  
+**Versión**: 1.3.1  
 **Build**: Exitoso ✅  
-**Linting**: Sin errores ✅
+**Linting**: Sin errores ✅  
+**Hidratación**: Corregida ✅
 
