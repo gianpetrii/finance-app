@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { QuickActions } from "@/components/QuickActions";
+import { AppNavbar } from "@/components/AppNavbar";
 
 const publicRoutes = ["/", "/login", "/register", "/forgot-password"];
 
@@ -16,6 +17,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {/* App Navbar - Solo en páginas protegidas */}
+      <AppNavbar />
+      
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Sidebar Desktop - Colapsable */}
         <div className="hidden lg:block border-r">
