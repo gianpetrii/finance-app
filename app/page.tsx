@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { 
   ArrowRight, 
   TrendingUp, 
@@ -57,7 +59,9 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <>
+      <Navbar />
+      <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative py-12 sm:py-20 lg:py-32">
         <div className="container mx-auto px-4">
@@ -211,13 +215,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 FinanzApp. Todos los derechos reservados.</p>
-        </div>
-      </footer>
     </div>
+    <Footer />
+    </>
   );
 }
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { NewTransactionModal } from "@/components/NewTransactionModal"
 import { 
   Calendar as CalendarIcon,
   TrendingDown,
@@ -13,9 +14,11 @@ import {
   AlertCircle,
   CheckCircle,
   Plus,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
-import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns"
+import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from "date-fns"
 import { es } from "date-fns/locale"
 
 // Tipos
@@ -62,7 +65,10 @@ const initialTransactions: Transaction[] = [
 
 export default function DailyExpensesPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [transactions] = useState<Transaction[]>(initialTransactions)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [transactionType, setTransactionType] = useState<"expense" | "income">("expense")
   
   // Calcular gastos del día seleccionado
   const getDayExpenses = (date: Date) => {
@@ -108,8 +114,8 @@ export default function DailyExpensesPage() {
   }
 
   // Generar días del mes para el calendario
-  const monthStart = startOfMonth(selectedDate)
-  const monthEnd = endOfMonth(selectedDate)
+  const monthStart = startOfMonth(currentMonth)
+  const monthEnd = endOfMonth(currentMonth)
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
   // Obtener color del día en el calendario
@@ -215,10 +221,31 @@ export default function DailyExpensesPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Transacciones de {isToday(selectedDate) ? "Hoy" : "este Día"}</CardTitle>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Agregar
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="gap-2"
+                onClick={() => {
+                  setTransactionType("income")
+                  setIsModalOpen(true)
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Ingreso
+              </Button>
+              <Button 
+                size="sm" 
+                className="gap-2"
+                onClick={() => {
+                  setTransactionType("expense")
+                  setIsModalOpen(true)
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Gasto
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -228,7 +255,15 @@ export default function DailyExpensesPage() {
               <p className="text-muted-foreground">
                 No hay transacciones para este día
               </p>
-              <Button variant="outline" size="sm" className="mt-4 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-4 gap-2"
+                onClick={() => {
+                  setTransactionType("expense")
+                  setIsModalOpen(true)
+                }}
+              >
                 <Plus className="h-4 w-4" />
                 Agregar Primera Transacción
               </Button>
@@ -279,10 +314,37 @@ export default function DailyExpensesPage() {
       {/* Calendario Mensual */}
       <Card>
         <CardHeader>
-          <CardTitle>Calendario de {format(selectedDate, "MMMM yyyy", { locale: es })}</CardTitle>
-          <CardDescription>
-            Haz clic en un día para ver sus transacciones
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Calendario de {format(currentMonth, "MMMM yyyy", { locale: es })}</CardTitle>
+              <CardDescription>
+                Haz clic en un día para ver sus transacciones
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentMonth(new Date())}
+              >
+                Hoy
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {/* Leyenda */}
@@ -349,6 +411,16 @@ export default function DailyExpensesPage() {
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
+
+      {/* Modal de Nueva Transacción */}
+      <NewTransactionModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        defaultType={transactionType}
+        onSuccess={() => {
+          console.log("Transacción guardada exitosamente")
+        }}
+      />
     </div>
   )
 }

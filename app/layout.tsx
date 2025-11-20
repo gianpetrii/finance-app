@@ -6,8 +6,6 @@ import type React from "react"
 import { ClientWrapper } from "./components/ClientWrapper"
 import { Toaster } from "sonner"
 import { ConditionalLayout } from "./components/ConditionalLayout"
-import { Navbar } from "@/components/Navbar"
-import { Footer } from "@/components/Footer"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -72,11 +70,9 @@ export default function RootLayout({
           <ClientWrapper />
           <Toaster position="top-center" richColors />
           <div className="flex min-h-screen flex-col">
-            <Navbar />
             <ConditionalLayout>
               {children}
             </ConditionalLayout>
-            <Footer />
           </div>
         </ThemeProvider>
       </body>

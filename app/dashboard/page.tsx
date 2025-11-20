@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Overview } from "../components/Overview"
 import { RecentTransactions } from "../components/RecentTransactions"
 import { ExpensePieChart } from "../components/ExpensePieChart"
+import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { TimeframeFilter, type TimeframeFilterValue } from "@/components/TimeframeFilter"
+import { subDays } from "date-fns"
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,7 +18,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
-  CreditCard
+  Settings
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -76,6 +79,18 @@ export default function Dashboard() {
   const [montoDiario, setMontoDiario] = useState(0)
   const [gastosHoy] = useState(150)
   const [ahorroMes] = useState(1200)
+  
+  // Estados para el modal
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [transactionType, setTransactionType] = useState<"expense" | "income">("expense")
+  
+  // Estado para el filtro de timeframe
+  const [timeframeFilter, setTimeframeFilter] = useState<TimeframeFilterValue>({
+    mode: "preset",
+    preset: "30days",
+    startDate: subDays(new Date(), 30),
+    endDate: new Date(),
+  })
 
   useEffect(() => {
     // Calcular saldo real
@@ -157,19 +172,54 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button className="gap-2">
+              <Button 
+                className="gap-2"
+                onClick={() => {
+                  setTransactionType("expense")
+                  setIsModalOpen(true)
+                }}
+              >
                 <Plus className="h-4 w-4" />
                 Agregar Gasto
               </Button>
-              <Button variant="outline" className="gap-2">
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => {
+                  setTransactionType("income")
+                  setIsModalOpen(true)
+                }}
+              >
                 <TrendingUp className="h-4 w-4" />
                 Agregar Ingreso
               </Button>
-              <Button variant="outline" className="gap-2">
-                <CreditCard className="h-4 w-4" />
-                Ver Tarjetas
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => window.location.href = "/settings"}
+              >
+                <Settings className="h-4 w-4" />
+                Configurar Finanzas
               </Button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filtro de Timeframe */}
+      <Card className="border-2 border-primary/10">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Filtros de Análisis</h3>
+              <p className="text-xs text-muted-foreground">
+                Personaliza el período de tiempo para los gráficos
+              </p>
+            </div>
+            <TimeframeFilter 
+              value={timeframeFilter} 
+              onChange={setTimeframeFilter}
+            />
           </div>
         </CardContent>
       </Card>
@@ -183,11 +233,13 @@ export default function Dashboard() {
               Gastos vs Ingresos
             </CardTitle>
             <CardDescription>
-              Comparativa de los últimos 6 meses
+              {timeframeFilter.mode === "dayOfWeek" && timeframeFilter.dayOfWeek !== undefined
+                ? `Solo ${["Domingos", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábados"][timeframeFilter.dayOfWeek]}`
+                : "Comparativa del período seleccionado"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <Overview />
+            <Overview filter={timeframeFilter} />
           </CardContent>
         </Card>
 
@@ -198,11 +250,13 @@ export default function Dashboard() {
               Distribución por Categoría
             </CardTitle>
             <CardDescription>
-              Dónde se va tu dinero este mes
+              {timeframeFilter.mode === "dayOfWeek" && timeframeFilter.dayOfWeek !== undefined
+                ? `Gastos en ${["Domingos", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábados"][timeframeFilter.dayOfWeek]}`
+                : "Dónde se va tu dinero"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 h-[350px]">
-            <ExpensePieChart />
+            <ExpensePieChart filter={timeframeFilter} />
           </CardContent>
         </Card>
       </div>
@@ -220,7 +274,11 @@ export default function Dashboard() {
                 Últimos movimientos de tu cuenta
               </CardDescription>
             </div>
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => window.location.href = "/transactions"}
+            >
               Ver todas →
             </Button>
           </div>
@@ -253,6 +311,17 @@ export default function Dashboard() {
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
+
+      {/* Modal de Nueva Transacción */}
+      <NewTransactionModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        defaultType={transactionType}
+        onSuccess={() => {
+          // Aquí podrías recargar los datos del dashboard
+          console.log("Transacción guardada exitosamente")
+        }}
+      />
     </div>
   )
 }
