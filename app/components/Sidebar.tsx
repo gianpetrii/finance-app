@@ -21,9 +21,9 @@ const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Gastos Diarios", href: "/daily-expenses", icon: Calendar },
   { name: "Metas", href: "/goals", icon: Target },
-  { name: "Billetera", href: "/wallet", icon: Wallet },
-  { name: "Reportes", href: "/reports", icon: TrendingUp },
   { name: "Transacciones", href: "/transactions", icon: FileText },
+  { name: "Reportes", href: "/reports", icon: TrendingUp },
+  { name: "Billetera", href: "/wallet", icon: Wallet },
   { name: "Configuración", href: "/settings", icon: Settings },
 ]
 
