@@ -5,10 +5,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
   Home, 
-  CreditCard, 
   FileText, 
   Calendar,
-  PieChart,
   Target,
   TrendingUp,
   Wallet,
@@ -22,12 +20,10 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Gastos Diarios", href: "/daily-expenses", icon: Calendar },
-  { name: "Transacciones", href: "/transactions", icon: FileText },
-  { name: "Presupuesto", href: "/budget", icon: PieChart },
   { name: "Metas", href: "/goals", icon: Target },
+  { name: "Billetera", href: "/wallet", icon: Wallet },
   { name: "Reportes", href: "/reports", icon: TrendingUp },
-  { name: "Cuentas", href: "/accounts", icon: Wallet },
-  { name: "Tarjetas", href: "/cards", icon: CreditCard },
+  { name: "Transacciones", href: "/transactions", icon: FileText },
   { name: "Configuración", href: "/settings", icon: Settings },
 ]
 
