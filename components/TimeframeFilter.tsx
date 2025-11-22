@@ -55,6 +55,16 @@ export function TimeframeFilter({ value, onChange }: TimeframeFilterProps) {
     setMounted(true)
   }, [])
 
+  // Calcular días seleccionados
+  const getDaysCount = () => {
+    if (value.startDate && value.endDate) {
+      const diffTime = Math.abs(value.endDate.getTime() - value.startDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+      return diffDays
+    }
+    return 0
+  }
+
   const handlePresetChange = (preset: string) => {
     const today = new Date()
     let startDate: Date
@@ -187,76 +197,30 @@ export function TimeframeFilter({ value, onChange }: TimeframeFilterProps) {
           {value.mode === "custom" && (
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label>Fecha Inicio</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !value.startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {mounted && value.startDate ? format(value.startDate, "PPP", { locale: es }) : "Seleccionar"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={value.startDate}
-                      onSelect={(date) => {
-                        if (date) {
-                          // Si hay fecha de fin y la nueva fecha de inicio es posterior, ajustar fecha de fin
-                          if (value.endDate && date > value.endDate) {
-                            onChange({ ...value, startDate: date, endDate: date })
-                          } else {
-                            onChange({ ...value, startDate: date })
-                          }
-                        }
-                      }}
-                      disabled={(date) => value.endDate ? date > value.endDate : false}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Fecha Fin</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !value.endDate && "text-muted-foreground"
-                      )}
-                      disabled={!value.startDate}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {mounted && value.endDate ? format(value.endDate, "PPP", { locale: es }) : "Seleccionar"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={value.endDate}
-                      onSelect={(date) => {
-                        if (date) {
-                          onChange({ ...value, endDate: date })
-                        }
-                      }}
-                      disabled={(date) => value.startDate ? date < value.startDate : true}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label>Seleccionar Rango de Fechas</Label>
+                <Calendar
+                  mode="range"
+                  selected={{
+                    from: value.startDate,
+                    to: value.endDate
+                  }}
+                  onSelect={(range) => {
+                    if (range?.from) {
+                      onChange({
+                        ...value,
+                        startDate: range.from,
+                        endDate: range.to
+                      })
+                    }
+                  }}
+                  numberOfMonths={1}
+                  initialFocus
+                />
               </div>
               
-              {value.startDate && value.endDate && (
-                <div className="text-xs text-muted-foreground p-3 bg-muted rounded-lg">
-                  📅 Período seleccionado: {format(value.startDate, "d 'de' MMM", { locale: es })} - {format(value.endDate, "d 'de' MMM, yyyy", { locale: es })}
+              {value.startDate && value.endDate && getDaysCount() > 0 && (
+                <div className="text-sm font-medium text-center p-2 bg-primary/10 rounded-lg">
+                  {getDaysCount()} {getDaysCount() === 1 ? 'día' : 'días'} seleccionados
                 </div>
               )}
             </div>
