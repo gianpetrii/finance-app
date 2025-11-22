@@ -632,7 +632,6 @@ export default function WalletPage() {
               <h3 className="text-lg font-semibold">Gastos Divididos</h3>
               {groupExpenses.map((expense) => {
                 const totalRecovered = expense.debts.reduce((sum, d) => sum + d.amountPaid, 0)
-                const totalPending = expense.totalAmount - totalRecovered
                 const pendingCount = expense.debts.filter(d => d.status !== "paid").length
 
                 return (

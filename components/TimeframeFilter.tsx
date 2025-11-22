@@ -6,10 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
-import { CalendarIcon, Filter } from "lucide-react"
+import { Filter } from "lucide-react"
 import { format, subDays, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns"
-import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
 
 export interface TimeframeFilterValue {
   mode: "preset" | "custom" | "dayOfWeek"
@@ -49,10 +47,9 @@ const daysOfWeek = [
 
 export function TimeframeFilter({ value, onChange }: TimeframeFilterProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    // Component mounted
   }, [])
 
   // Calcular días seleccionados

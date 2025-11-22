@@ -193,15 +193,14 @@ export default function DailyExpensesPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    size="icon"
-                    className="h-9 w-9"
+                    className="h-9 px-3 text-sm"
                     onClick={() => {
                       const today = new Date()
                       setCurrentMonth(today)
                       setSelectedDate(today)
                     }}
                   >
-                    <CalendarIcon className="h-4 w-4" />
+                    Volver a hoy
                   </Button>
                   <Button
                     variant="outline"
