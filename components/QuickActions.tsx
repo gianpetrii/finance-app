@@ -77,10 +77,23 @@ export function QuickActions() {
       <div className="fixed bottom-20 right-6 lg:bottom-8 lg:right-8 z-40">
         <Button
           size="lg"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all"
+          className="h-12 shadow-lg hover:shadow-xl transition-all rounded-lg
+                     w-auto px-4 gap-2 whitespace-nowrap"
           onClick={() => setIsOpen(true)}
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5 flex-shrink-0" />
+          {/* Mobile: "+ Agregar" */}
+          <span className="sm:hidden">
+            Agregar
+          </span>
+          {/* Tablet: "+ Agregar" */}
+          <span className="hidden sm:inline lg:hidden">
+            Agregar
+          </span>
+          {/* Desktop: "+ Agregar Transacción" */}
+          <span className="hidden lg:inline">
+            Agregar Transacción
+          </span>
         </Button>
       </div>
 
