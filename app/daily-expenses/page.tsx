@@ -182,24 +182,31 @@ export default function DailyExpensesPage() {
                     Haz clic en un día para ver sus transacciones
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Button
                     variant="outline"
                     size="icon"
+                    className="h-9 w-9"
                     onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentMonth(new Date())}
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => {
+                      const today = new Date()
+                      setCurrentMonth(today)
+                      setSelectedDate(today)
+                    }}
                   >
-                    Hoy
+                    <CalendarIcon className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
+                    className="h-9 w-9"
                     onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
                   >
                     <ChevronRight className="h-4 w-4" />
@@ -306,13 +313,13 @@ export default function DailyExpensesPage() {
           <Card className="border-2 border-primary/20">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <CalendarIcon className="h-4 w-4 text-primary" />
-                    {isToday(selectedDate) ? "Hoy" : format(selectedDate, "d 'de' MMM", { locale: es })}
+                    {format(selectedDate, "d 'de' MMMM", { locale: es })}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    {format(selectedDate, "EEEE", { locale: es })}
+                    {format(selectedDate, "EEEE, yyyy", { locale: es })}
                   </CardDescription>
                 </div>
                 {isToday(selectedDate) && (
