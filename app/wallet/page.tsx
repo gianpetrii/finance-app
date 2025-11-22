@@ -343,7 +343,7 @@ export default function WalletPage() {
           <TabsTrigger value="debts" className="relative">
             Deudas
             {(totalReceivable > 0 || totalPayable > 0) && (
-              <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 text-xs">
+              <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 text-xs flex items-center justify-center">
                 {receivables.filter(d => d.status !== "paid").length + payables.filter(d => d.status !== "paid").length}
               </Badge>
             )}
