@@ -205,7 +205,17 @@ export function TimeframeFilter({ value, onChange }: TimeframeFilterProps) {
                     <Calendar
                       mode="single"
                       selected={value.startDate}
-                      onSelect={(date) => date && onChange({ ...value, startDate: date })}
+                      onSelect={(date) => {
+                        if (date) {
+                          // Si hay fecha de fin y la nueva fecha de inicio es posterior, ajustar fecha de fin
+                          if (value.endDate && date > value.endDate) {
+                            onChange({ ...value, startDate: date, endDate: date })
+                          } else {
+                            onChange({ ...value, startDate: date })
+                          }
+                        }
+                      }}
+                      disabled={(date) => value.endDate ? date > value.endDate : false}
                       initialFocus
                     />
                   </PopoverContent>
@@ -222,6 +232,7 @@ export function TimeframeFilter({ value, onChange }: TimeframeFilterProps) {
                         "w-full justify-start text-left font-normal",
                         !value.endDate && "text-muted-foreground"
                       )}
+                      disabled={!value.startDate}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {mounted && value.endDate ? format(value.endDate, "PPP", { locale: es }) : "Seleccionar"}
@@ -231,12 +242,23 @@ export function TimeframeFilter({ value, onChange }: TimeframeFilterProps) {
                     <Calendar
                       mode="single"
                       selected={value.endDate}
-                      onSelect={(date) => date && onChange({ ...value, endDate: date })}
+                      onSelect={(date) => {
+                        if (date) {
+                          onChange({ ...value, endDate: date })
+                        }
+                      }}
+                      disabled={(date) => value.startDate ? date < value.startDate : true}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
               </div>
+              
+              {value.startDate && value.endDate && (
+                <div className="text-xs text-muted-foreground p-3 bg-muted rounded-lg">
+                  📅 Período seleccionado: {format(value.startDate, "d 'de' MMM", { locale: es })} - {format(value.endDate, "d 'de' MMM, yyyy", { locale: es })}
+                </div>
+              )}
             </div>
           )}
 
