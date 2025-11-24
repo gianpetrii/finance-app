@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Overview } from "../components/Overview"
@@ -8,12 +8,12 @@ import { RecentTransactions } from "../components/RecentTransactions"
 import { ExpensePieChart } from "../components/ExpensePieChart"
 import { NewTransactionModal } from "@/components/NewTransactionModal"
 import { TimeframeFilter, type TimeframeFilterValue } from "@/components/TimeframeFilter"
-import { subDays } from "date-fns"
+import { Spinner } from "@/components/ui/spinner"
+import { subDays, startOfMonth, endOfMonth } from "date-fns"
 import { 
   TrendingUp, 
   TrendingDown, 
-  Wallet, 
-  Target,
+  Wallet,
   Plus,
   ArrowUpRight,
   ArrowDownRight,
@@ -21,6 +21,8 @@ import {
   Settings
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
+import { useTransactions } from "@/lib/hooks/useTransactions"
+import { useFinancialSettings } from "@/lib/hooks/useFinancialSettings"
 
 // Componente de KPI Card mejorado
 function KPICard({ 
@@ -73,12 +75,14 @@ function KPICard({
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const [saldoActual, setSaldoActual] = useState(10000)
-  const [creditoAPagar, setCreditoAPagar] = useState(2000)
-  const [saldoReal, setSaldoReal] = useState(0)
-  const [montoDiario, setMontoDiario] = useState(0)
-  const [gastosHoy] = useState(150)
-  const [ahorroMes] = useState(1200)
+  
+  // Hooks de datos reales
+  const currentMonth = new Date()
+  const { transactions, loading: transactionsLoading } = useTransactions({
+    startDate: startOfMonth(currentMonth),
+    endDate: endOfMonth(currentMonth)
+  })
+  const { settings, loading: settingsLoading } = useFinancialSettings()
   
   // Estados para el modal
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -92,15 +96,39 @@ export default function Dashboard() {
     endDate: new Date(),
   })
 
-  useEffect(() => {
-    // Calcular saldo real
-    const nuevoSaldoReal = saldoActual - creditoAPagar
-    setSaldoReal(nuevoSaldoReal)
+  // Calcular KPIs desde datos reales
+  const totalExpenses = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
 
-    // Calcular monto diario (asumiendo un mes de 30 días)
-    const nuevoMontoDiario = nuevoSaldoReal / 30
-    setMontoDiario(nuevoMontoDiario)
-  }, [saldoActual, creditoAPagar])
+  const totalIncome = transactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
+
+  const balance = totalIncome - totalExpenses
+  const dailyBudget = settings?.dailyBudget || 0
+  const monthlyIncome = settings?.monthlyIncome || 0
+
+  // Gastos de hoy
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const gastosHoy = transactions
+    .filter(t => {
+      if (t.type !== 'expense') return false
+      const transDate = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+      transDate.setHours(0, 0, 0, 0)
+      return transDate.getTime() === today.getTime()
+    })
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
+
+  // Loading state
+  if (transactionsLoading || settingsLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
 
   // Obtener saludo según la hora
   const getGreeting = () => {
@@ -130,32 +158,32 @@ export default function Dashboard() {
       {/* KPIs Principales - Lo más importante primero */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Saldo Real"
-          value={`$${saldoReal.toLocaleString()}`}
-          change="+12%"
-          changeType="positive"
-          trend="up"
+          title="Balance del Mes"
+          value={`$${balance.toLocaleString()}`}
+          change={balance >= 0 ? "Positivo" : "Negativo"}
+          changeType={balance >= 0 ? "positive" : "negative"}
+          trend={balance >= 0 ? "up" : "down"}
           icon={Wallet}
         />
         <KPICard
           title="Gastos Hoy"
           value={`$${gastosHoy.toLocaleString()}`}
-          change="$200 límite"
-          changeType="neutral"
+          change={`$${dailyBudget.toFixed(0)} límite`}
+          changeType={gastosHoy > dailyBudget ? "negative" : "positive"}
           icon={TrendingDown}
         />
         <KPICard
-          title="Ahorro del Mes"
-          value={`$${ahorroMes.toLocaleString()}`}
-          change="+8%"
-          changeType="positive"
-          trend="up"
-          icon={Target}
+          title="Ingresos del Mes"
+          value={`$${totalIncome.toLocaleString()}`}
+          change={`$${monthlyIncome.toLocaleString()} esperado`}
+          changeType={totalIncome >= monthlyIncome ? "positive" : "neutral"}
+          trend={totalIncome >= monthlyIncome ? "up" : "stable"}
+          icon={TrendingUp}
         />
         <KPICard
-          title="Disponible/Día"
-          value={`$${Math.round(montoDiario).toLocaleString()}`}
-          change="20 días restantes"
+          title="Presupuesto Diario"
+          value={`$${dailyBudget.toFixed(0)}`}
+          change={`${new Date().getDate()} días transcurridos`}
           changeType="neutral"
           icon={Calendar}
         />

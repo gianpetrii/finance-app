@@ -17,7 +17,8 @@ import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/hooks/useAuth"
-import { createDocument } from "@/lib/firebase/firestore"
+import { createTransaction } from "@/lib/firebase/collections"
+import { Timestamp } from "firebase/firestore"
 
 interface NewTransactionModalProps {
   open: boolean
@@ -189,41 +190,34 @@ export function NewTransactionModal({
     setLoading(true)
 
     try {
-      // Generar ID único para la transacción
-      const transactionId = `${user.uid}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      
       // Preparar datos de división si aplica
       const splitData = type === "expense" && isSplitExpense ? {
         splitType,
         people: splitPeople.map((p, index) => ({
-          name: p.name.trim() || `Persona ${index + 1}`, // Si no hay nombre, usar "Persona X"
+          id: `p${index + 1}`,
+          name: p.name.trim() || `Persona ${index + 1}`,
           amount: splitType === "equal" 
             ? amountPerPerson 
             : parseFloat(p.amount) || 0,
           paid: false
         })),
-        totalToRecover: totalAmount
+        totalToRecover: totalAmount,
+        totalRecovered: 0
       } : null
 
       // Crear documento en Firestore
       const transactionData = {
-        userId: user.uid,
         type,
         amount: parseFloat(amount),
-        description: notes.trim() || category, // Usar notas como descripción, o categoría si está vacío
         category,
         paymentMethod,
-        date: date.toISOString(),
+        date: Timestamp.fromDate(date),
         notes: notes.trim(),
         isSplitExpense: type === "expense" ? isSplitExpense : false,
         ...(splitData && { splitExpense: splitData })
       }
 
-      const result = await createDocument("transactions", transactionId, transactionData)
-      
-      if (result.error) {
-        throw new Error(result.error)
-      }
+      await createTransaction(user.uid, transactionData)
 
       toast.success(
         type === "expense" 
@@ -234,7 +228,6 @@ export function NewTransactionModal({
       resetForm()
       onOpenChange(false)
       
-      // Llamar callback de éxito si existe
       if (onSuccess) {
         onSuccess()
       }
