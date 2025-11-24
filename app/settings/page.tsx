@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,21 +11,11 @@ import {
   TrendingDown,
   Save,
   Settings as SettingsIcon,
-  ChevronDown,
-  ChevronUp,
-  History,
-  Percent
+  Percent,
+  Plus,
+  X
 } from "lucide-react"
 import { toast } from "sonner"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-
-// Tipos
-interface HistoryEntry {
-  id: number
-  value: number
-  date: Date
-}
 
 interface FixedExpense {
   id: number
@@ -42,30 +32,6 @@ export default function SettingsPage() {
     { id: 1, name: "Alquiler", amount: "800" },
     { id: 2, name: "Servicios", amount: "200" },
     { id: 3, name: "Internet", amount: "50" },
-  ])
-
-  // Estados para secciones colapsables
-  const [expandedSections, setExpandedSections] = useState({
-    salary: false,
-    expenses: false,
-    savings: false
-  })
-
-  // Historial de cambios (simulado)
-  const [salaryHistory] = useState<HistoryEntry[]>([
-    { id: 1, value: 3500, date: new Date(2025, 0, 1) },
-    { id: 2, value: 3200, date: new Date(2024, 8, 1) },
-    { id: 3, value: 3000, date: new Date(2024, 5, 1) },
-  ])
-
-  const [expensesHistory] = useState<HistoryEntry[]>([
-    { id: 1, value: 1050, date: new Date(2025, 0, 1) },
-    { id: 2, value: 1000, date: new Date(2024, 10, 1) },
-  ])
-
-  const [savingsHistory] = useState<HistoryEntry[]>([
-    { id: 1, value: 500, date: new Date(2025, 0, 1) },
-    { id: 2, value: 450, date: new Date(2024, 9, 1) },
   ])
 
   const handleSave = () => {
@@ -89,13 +55,6 @@ export default function SettingsPage() {
 
   const removeFixedExpense = (id: number) => {
     setFixedExpenses(fixedExpenses.filter(exp => exp.id !== id))
-  }
-
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections({
-      ...expandedSections,
-      [section]: !expandedSections[section]
-    })
   }
 
   const totalFixedExpenses = fixedExpenses.reduce((sum, exp) => 
@@ -188,101 +147,67 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      {/* 1. Ingresos Mensuales */}
-      <Card>
-        <CardHeader className="cursor-pointer" onClick={() => toggleSection("salary")}>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                Ingresos Mensuales
-              </CardTitle>
-              <CardDescription>
-                Tu ingreso mensual fijo
-              </CardDescription>
-            </div>
-            {expandedSections.salary ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="salary">Monto Mensual</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                $
-              </span>
-              <Input
-                id="salary"
-                type="number"
-                value={salary}
-                onChange={(e) => setSalary(e.target.value)}
-                className="pl-7"
-              />
-            </div>
-          </div>
-
-          {/* Historial */}
-          {expandedSections.salary && (
-            <div className="pt-4 border-t space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <History className="h-4 w-4" />
-                Historial de Cambios
-              </div>
-              <div className="space-y-2">
-                {salaryHistory.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50">
-                    <span className="text-muted-foreground">
-                      {format(entry.date, "d 'de' MMMM, yyyy", { locale: es })}
-                    </span>
-                    <span className="font-medium">
-                      ${entry.value.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+      {/* Configuración - 3 Columnas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Columna 1: Ingresos Mensuales */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              Ingresos Mensuales
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="salary">Monto Mensual</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="salary"
+                  type="number"
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  className="pl-7"
+                />
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* 2. Gastos Fijos Mensuales */}
-      <Card>
-        <CardHeader className="cursor-pointer" onClick={() => toggleSection("expenses")}>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
+        {/* Columna 2: Gastos Fijos Mensuales */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <TrendingDown className="h-5 w-5 text-red-500" />
-                Gastos Fijos Mensuales
+                Gastos Fijos
               </CardTitle>
-              <CardDescription>
-                Gastos que se repiten cada mes
-              </CardDescription>
+              <Button 
+                onClick={addFixedExpense} 
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-            {expandedSections.expenses ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
+          </CardHeader>
+          <CardContent className="space-y-3 max-h-[300px] overflow-y-auto">
             {fixedExpenses.map((expense) => (
-              <div key={expense.id} className="flex gap-3 items-start">
+              <div key={expense.id} className="flex gap-2 items-start">
                 <div className="flex-1 space-y-2">
                   <Input
-                    placeholder="Nombre del gasto"
+                    placeholder="Nombre"
                     value={expense.name}
                     onChange={(e) => updateFixedExpense(expense.id, "name", e.target.value)}
+                    className="h-9 text-sm"
                   />
                 </div>
-                <div className="w-32 space-y-2">
+                <div className="w-24 space-y-2">
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
                       $
                     </span>
                     <Input
@@ -290,7 +215,7 @@ export default function SettingsPage() {
                       placeholder="0"
                       value={expense.amount}
                       onChange={(e) => updateFixedExpense(expense.id, "amount", e.target.value)}
-                      className="pl-6"
+                      className="pl-5 h-9 text-sm"
                     />
                   </div>
                 </div>
@@ -298,151 +223,94 @@ export default function SettingsPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeFixedExpense(expense.id)}
+                  className="h-9 w-9"
                 >
-                  ✕
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             ))}
             
             {fixedExpenses.length === 0 && (
-              <p className="text-center text-muted-foreground py-4">
-                No hay gastos fijos configurados
+              <p className="text-center text-muted-foreground text-sm py-4">
+                No hay gastos fijos
               </p>
             )}
-            
-            <Button onClick={addFixedExpense} variant="outline" className="w-full">
-              Agregar Gasto Fijo
-            </Button>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Historial */}
-          {expandedSections.expenses && (
-            <div className="pt-4 border-t space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <History className="h-4 w-4" />
-                Historial de Cambios
-              </div>
+        {/* Columna 3: Meta de Ahorro */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <DollarSign className="h-5 w-5 text-blue-500" />
+              Meta de Ahorro
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Toggle Tipo de Ahorro */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant={savingsType === "fixed" ? "default" : "outline"}
+                onClick={() => setSavingsType("fixed")}
+                className="gap-2 h-9"
+                size="sm"
+              >
+                <DollarSign className="h-3 w-3" />
+                Fijo
+              </Button>
+              <Button
+                variant={savingsType === "percentage" ? "default" : "outline"}
+                onClick={() => setSavingsType("percentage")}
+                className="gap-2 h-9"
+                size="sm"
+              >
+                <Percent className="h-3 w-3" />
+                %
+              </Button>
+            </div>
+
+            {/* Input según tipo */}
+            {savingsType === "fixed" ? (
               <div className="space-y-2">
-                {expensesHistory.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50">
-                    <span className="text-muted-foreground">
-                      {format(entry.date, "d 'de' MMMM, yyyy", { locale: es })}
-                    </span>
-                    <span className="font-medium">
-                      ${entry.value.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+                <Label htmlFor="savings">Monto Mensual</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="savings"
+                    type="number"
+                    value={expectedSavings}
+                    onChange={(e) => setExpectedSavings(e.target.value)}
+                    className="pl-7"
+                  />
+                </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 3. Meta de Ahorro */}
-      <Card>
-        <CardHeader className="cursor-pointer" onClick={() => toggleSection("savings")}>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-blue-500" />
-                Meta de Ahorro Mensual
-              </CardTitle>
-              <CardDescription>
-                Define tu objetivo de ahorro mensual
-              </CardDescription>
-            </div>
-            {expandedSections.savings ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Toggle Tipo de Ahorro */}
-          <div className="flex gap-2">
-            <Button
-              variant={savingsType === "fixed" ? "default" : "outline"}
-              onClick={() => setSavingsType("fixed")}
-              className="flex-1 gap-2"
-            >
-              <DollarSign className="h-4 w-4" />
-              Monto Fijo
-            </Button>
-            <Button
-              variant={savingsType === "percentage" ? "default" : "outline"}
-              onClick={() => setSavingsType("percentage")}
-              className="flex-1 gap-2"
-            >
-              <Percent className="h-4 w-4" />
-              Porcentaje
-            </Button>
-          </div>
-
-          {/* Input según tipo */}
-          {savingsType === "fixed" ? (
-            <div className="space-y-2">
-              <Label htmlFor="savings">Monto Mensual</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
-                </span>
-                <Input
-                  id="savings"
-                  type="number"
-                  value={expectedSavings}
-                  onChange={(e) => setExpectedSavings(e.target.value)}
-                  className="pl-7"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="savingsPercentage">Porcentaje del Salario</Label>
-              <div className="relative">
-                <Input
-                  id="savingsPercentage"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={savingsPercentage}
-                  onChange={(e) => setSavingsPercentage(e.target.value)}
-                  className="pr-7"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  %
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Equivale a ${calculatedSavings.toLocaleString()} al mes
-              </p>
-            </div>
-          )}
-
-          {/* Historial */}
-          {expandedSections.savings && (
-            <div className="pt-4 border-t space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <History className="h-4 w-4" />
-                Historial de Cambios
-              </div>
               <div className="space-y-2">
-                {savingsHistory.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50">
-                    <span className="text-muted-foreground">
-                      {format(entry.date, "d 'de' MMMM, yyyy", { locale: es })}
-                    </span>
-                    <span className="font-medium">
-                      ${entry.value.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+                <Label htmlFor="savingsPercentage">Porcentaje</Label>
+                <div className="relative">
+                  <Input
+                    id="savingsPercentage"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={savingsPercentage}
+                    onChange={(e) => setSavingsPercentage(e.target.value)}
+                    className="pr-7"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    %
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  = ${calculatedSavings.toLocaleString()} al mes
+                </p>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Fórmula del Presupuesto Diario */}
       <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
@@ -488,4 +356,3 @@ export default function SettingsPage() {
     </div>
   )
 }
-

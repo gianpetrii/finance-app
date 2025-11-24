@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💰 Finance App
 
-## Getting Started
+Aplicación web de gestión financiera personal construida con Next.js, Firebase y Vercel.
 
-First, run the development server:
+## 🚀 Características Actuales
+
+- ✅ Autenticación con Firebase (Email/Password y Google OAuth)
+- ✅ Dashboard con KPIs y gráficos
+- ✅ Registro de gastos e ingresos
+- ✅ Gastos divididos entre personas
+- ✅ Control de presupuesto diario con balance acumulado
+- ✅ Metas de ahorro
+- ✅ Gestión de billetera (cuentas y tarjetas)
+- ✅ Sistema de deudas (me deben / debo)
+- ✅ Configuración financiera personalizada
+- ✅ Diseño responsive y moderno
+
+## 📋 Funcionalidades Pendientes
+
+### 🔴 Alta Prioridad
+- [ ] **Arreglar alineación del calendario en filtro personalizado**
+- [ ] **Conectar con datos reales de Firebase en todas las páginas**
+  - Transacciones reales
+  - Metas de ahorro funcionales
+  - Gastos divididos persistentes
+  - Balance y reportes con datos reales
+  
+### 🟡 Media Prioridad
+- [ ] **Sistema de Notificaciones**
+  - Vencimiento de servicios (luz, agua, internet, etc.)
+  - Deudas pendientes de cobro
+  - Deudas pendientes de pago
+  - Alertas de presupuesto diario excedido
+  - Recordatorios personalizados
+  - Notificaciones push
+
+- [ ] **Asistente Personal por Voz**
+  - Comunicación por voz
+  - Acceso a toda la información financiera del usuario
+  - Registro de gastos e ingresos mediante voz
+  - Consultas sobre balance, presupuesto y metas
+  - Integración con IA (GPT-4 / Claude)
+
+- [ ] **Completar funcionalidad de Gastos Divididos**
+  - Marcar pagos individuales
+  - Enviar recordatorios automáticos
+  - Historial de pagos por persona
+  - Estadísticas de gastos compartidos
+
+- [ ] **Reportes Avanzados**
+  - Exportar a PDF/Excel
+  - Comparativas mes a mes
+  - Proyecciones financieras
+  - Análisis de tendencias
+
+### 🟢 Baja Prioridad
+- [ ] Gestión completa de tarjetas (CRUD, alertas de vencimiento)
+- [ ] Gestión completa de cuentas bancarias
+- [ ] Transferencias entre cuentas
+- [ ] Perfil de usuario con foto
+- [ ] Historial de configuración financiera
+- [ ] Modo oscuro personalizado
+- [ ] Exportación de datos
+
+## 🛠 Tecnologías
+
+- **Framework**: Next.js 14 (App Router)
+- **Autenticación**: Firebase Auth
+- **Base de Datos**: Firebase Firestore
+- **Almacenamiento**: Firebase Storage
+- **Hosting**: Vercel
+- **UI**: Tailwind CSS + Shadcn UI
+- **Gráficos**: Recharts
+- **Notificaciones**: Sonner
+
+## 💻 Desarrollo
+
+### Instalación
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Variables de Entorno
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Crear un archivo `.env.local` con:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
 
-## Learn More
+### Comandos
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Desarrollo
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Build
+npm run build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Producción
+npm start
 
-## Deploy on Vercel
+# Linting
+npm run lint
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📱 Estructura del Proyecto
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+finance-app/
+├── app/                    # Rutas y páginas
+│   ├── dashboard/         # Dashboard principal
+│   ├── daily-expenses/    # Gastos diarios
+│   ├── goals/             # Metas de ahorro
+│   ├── wallet/            # Billetera (cuentas + tarjetas)
+│   ├── transactions/      # Historial de transacciones
+│   ├── reports/           # Reportes y análisis
+│   ├── settings/          # Configuración financiera
+│   └── profile/           # Perfil de usuario
+├── components/            # Componentes reutilizables
+│   ├── ui/               # Componentes de Shadcn UI
+│   └── ...               # Componentes personalizados
+├── lib/                   # Utilidades y configuración
+│   ├── firebase/         # Configuración de Firebase
+│   └── hooks/            # Custom hooks
+└── public/               # Archivos estáticos
+```
+
+## 🚢 Deploy en Vercel
+
+La aplicación se despliega automáticamente en Vercel al hacer push a la rama principal.
+
+1. Conectar el repositorio de GitHub con Vercel
+2. Configurar las variables de entorno en Vercel
+3. Deploy automático en cada push
+
+## 📝 Notas de Desarrollo
+
+- El calendario del filtro personalizado necesita ajustes de alineación
+- Los datos actuales son simulados (mock data)
+- El sistema de notificaciones está planificado pero no implementado
+- El asistente por voz es una funcionalidad futura prioritaria
+
+## 🤝 Contribuciones
+
+Este es un proyecto personal, pero las sugerencias son bienvenidas.
+
+## 📄 Licencia
+
+Proyecto privado - Todos los derechos reservados
