@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts"
-import { format, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, getDay } from "date-fns"
+import { format, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, getDay, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns"
 import { es } from "date-fns/locale"
 import type { TimeframeFilterValue } from "@/components/TimeframeFilter"
+import { useTransactions } from "@/lib/hooks/useTransactions"
 
 interface OverviewProps {
   filter?: TimeframeFilterValue
@@ -13,36 +14,57 @@ interface OverviewProps {
 export function Overview({ filter }: OverviewProps) {
   const [data, setData] = useState<any[]>([])
   const [mounted, setMounted] = useState(false)
+  
+  // Obtener transacciones reales
+  const { transactions } = useTransactions({
+    startDate: filter?.startDate,
+    endDate: filter?.endDate
+  })
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    if (!filter || !filter.startDate || !filter.endDate) {
-      // Datos por defecto
-      setData(generateDefaultData())
-      return
+    const generateData = () => {
+      if (!filter || !filter.startDate || !filter.endDate) {
+        // Datos por defecto (últimos 12 meses)
+        if (transactions.length === 0) {
+          return []
+        }
+        
+        // Agrupar por mes (últimos 12 meses)
+        const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+        return months.map((name, index) => {
+          const monthTransactions = transactions.filter(t => {
+            const date = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+            return date.getMonth() === index
+          })
+          
+          const gastos = monthTransactions
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + (t.amount || 0), 0)
+          
+          const ingresos = monthTransactions
+            .filter(t => t.type === 'income')
+            .reduce((sum, t) => sum + (t.amount || 0), 0)
+          
+          return { name, gastos, ingresos }
+        })
+      }
+
+      // Generar datos basados en el filtro y transacciones reales
+      if (filter.mode === "dayOfWeek" && filter.dayOfWeek !== undefined) {
+        return generateDayOfWeekData(filter, transactions)
+      } else {
+        return generateTimeframeData(filter, transactions)
+      }
     }
 
-    // Generar datos basados en el filtro
-    if (filter.mode === "dayOfWeek" && filter.dayOfWeek !== undefined) {
-      setData(generateDayOfWeekData(filter))
-    } else {
-      setData(generateTimeframeData(filter))
-    }
-  }, [filter])
+    setData(generateData())
+  }, [filter, transactions])
 
-  const generateDefaultData = () => {
-    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
-    return months.map(name => ({
-      name,
-      gastos: Math.floor(Math.random() * 3000) + 1000,
-      ingresos: Math.floor(Math.random() * 2000) + 3000,
-    }))
-  }
-
-  const generateTimeframeData = (filter: TimeframeFilterValue) => {
+  const generateTimeframeData = (filter: TimeframeFilterValue, transactions: any[]) => {
     if (!filter.startDate || !filter.endDate) return []
 
     const daysDiff = Math.abs(filter.endDate.getTime() - filter.startDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -50,11 +72,29 @@ export function Overview({ filter }: OverviewProps) {
     // Si es menos de 31 días, mostrar por día
     if (daysDiff <= 31) {
       const days = eachDayOfInterval({ start: filter.startDate, end: filter.endDate })
-      return days.map(day => ({
-        name: format(day, "dd/MM", { locale: es }),
-        gastos: Math.floor(Math.random() * 200) + 50,
-        ingresos: Math.floor(Math.random() * 300) + 100,
-      }))
+      return days.map(day => {
+        const dayStart = startOfDay(day)
+        const dayEnd = endOfDay(day)
+        
+        const dayTransactions = transactions.filter(t => {
+          const date = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+          return date >= dayStart && date <= dayEnd
+        })
+        
+        const gastos = dayTransactions
+          .filter(t => t.type === 'expense')
+          .reduce((sum, t) => sum + (t.amount || 0), 0)
+        
+        const ingresos = dayTransactions
+          .filter(t => t.type === 'income')
+          .reduce((sum, t) => sum + (t.amount || 0), 0)
+        
+        return {
+          name: format(day, "dd/MM", { locale: es }),
+          gastos,
+          ingresos
+        }
+      })
     }
 
     // Si es menos de 90 días, mostrar por semana
@@ -63,23 +103,59 @@ export function Overview({ filter }: OverviewProps) {
         { start: filter.startDate, end: filter.endDate },
         { weekStartsOn: 1 }
       )
-      return weeks.map((week, index) => ({
-        name: `Sem ${index + 1}`,
-        gastos: Math.floor(Math.random() * 1000) + 500,
-        ingresos: Math.floor(Math.random() * 1500) + 1000,
-      }))
+      return weeks.map((week, index) => {
+        const weekStart = startOfWeek(week, { weekStartsOn: 1 })
+        const weekEnd = endOfWeek(week, { weekStartsOn: 1 })
+        
+        const weekTransactions = transactions.filter(t => {
+          const date = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+          return date >= weekStart && date <= weekEnd
+        })
+        
+        const gastos = weekTransactions
+          .filter(t => t.type === 'expense')
+          .reduce((sum, t) => sum + (t.amount || 0), 0)
+        
+        const ingresos = weekTransactions
+          .filter(t => t.type === 'income')
+          .reduce((sum, t) => sum + (t.amount || 0), 0)
+        
+        return {
+          name: `Sem ${index + 1}`,
+          gastos,
+          ingresos
+        }
+      })
     }
 
     // Si es más de 90 días, mostrar por mes
     const months = eachMonthOfInterval({ start: filter.startDate, end: filter.endDate })
-    return months.map(month => ({
-      name: format(month, "MMM yy", { locale: es }),
-      gastos: Math.floor(Math.random() * 3000) + 1000,
-      ingresos: Math.floor(Math.random() * 2000) + 3000,
-    }))
+    return months.map(month => {
+      const monthStart = startOfMonth(month)
+      const monthEnd = endOfMonth(month)
+      
+      const monthTransactions = transactions.filter(t => {
+        const date = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+        return date >= monthStart && date <= monthEnd
+      })
+      
+      const gastos = monthTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+      
+      const ingresos = monthTransactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+      
+      return {
+        name: format(month, "MMM yy", { locale: es }),
+        gastos,
+        ingresos
+      }
+    })
   }
 
-  const generateDayOfWeekData = (filter: TimeframeFilterValue) => {
+  const generateDayOfWeekData = (filter: TimeframeFilterValue, transactions: any[]) => {
     if (filter.dayOfWeek === undefined || !filter.lookbackMonths) return []
 
     const months = filter.lookbackMonths || 6
@@ -92,12 +168,30 @@ export function Overview({ filter }: OverviewProps) {
     // Filtrar solo los días de la semana seleccionados
     const selectedDays = allDays.filter(day => getDay(day) === filter.dayOfWeek)
     
-    // Mostrar cada ocurrencia individual del día seleccionado
-    return selectedDays.map(day => ({
-      name: format(day, "dd/MM", { locale: es }),
-      gastos: Math.floor(Math.random() * 200) + 50,
-      ingresos: Math.floor(Math.random() * 300) + 100,
-    }))
+    // Mostrar cada ocurrencia individual del día seleccionado con datos reales
+    return selectedDays.map(day => {
+      const dayStart = startOfDay(day)
+      const dayEnd = endOfDay(day)
+      
+      const dayTransactions = transactions.filter(t => {
+        const date = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+        return date >= dayStart && date <= dayEnd
+      })
+      
+      const gastos = dayTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+      
+      const ingresos = dayTransactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+      
+      return {
+        name: format(day, "dd/MM", { locale: es }),
+        gastos,
+        ingresos
+      }
+    })
   }
 
   if (!mounted) {

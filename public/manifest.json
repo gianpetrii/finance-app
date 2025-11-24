@@ -1,6 +1,6 @@
 {
-  "name": "FinanzApp - Gestión de Finanzas Personales",
-  "short_name": "FinanzApp",
+  "name": "FinancialAdvisor - Gestión de Finanzas Personales",
+  "short_name": "FinancialAdvisor",
   "description": "Controla tus ingresos, gastos y ahorros de forma simple y efectiva",
   "start_url": "/",
   "display": "standalone",

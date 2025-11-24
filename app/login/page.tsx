@@ -72,7 +72,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
           <CardDescription>
-            Ingresa tu email y contraseña para acceder a FinanzApp
+            Ingresa tu email y contraseña para acceder a FinancialAdvisor
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

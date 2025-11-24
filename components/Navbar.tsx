@@ -52,7 +52,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2">
             <Wallet className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">FinanzApp</span>
+            <span className="text-xl font-bold">FinancialAdvisor</span>
           </Link>
 
           {/* Desktop Navigation */}

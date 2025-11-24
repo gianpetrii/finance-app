@@ -11,14 +11,14 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
-    default: "FinanzApp - Gestiona tus Finanzas de Manera Inteligente",
-    template: "%s | FinanzApp",
+    default: "FinancialAdvisor - Gestiona tus Finanzas de Manera Inteligente",
+    template: "%s | FinancialAdvisor",
   },
-  description: "Controla tus ingresos, gastos y ahorros de forma simple y efectiva. FinanzApp te ayuda a gestionar tu dinero con herramientas inteligentes y visualizaciones claras.",
+  description: "Controla tus ingresos, gastos y ahorros de forma simple y efectiva. FinancialAdvisor te ayuda a gestionar tu dinero con herramientas inteligentes y visualizaciones claras.",
   keywords: ["finanzas personales", "control de gastos", "presupuesto", "ahorro", "gestión financiera", "app de finanzas"],
-  authors: [{ name: "FinanzApp Team" }],
-  creator: "FinanzApp",
-  publisher: "FinanzApp",
+  authors: [{ name: "FinancialAdvisor Team" }],
+  creator: "FinancialAdvisor",
+  publisher: "FinancialAdvisor",
   formatDetection: {
     email: false,
     address: false,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL('https://finance-app-three-steel.vercel.app'),
   openGraph: {
-    title: "FinanzApp - Gestiona tus Finanzas de Manera Inteligente",
+    title: "FinancialAdvisor - Gestiona tus Finanzas de Manera Inteligente",
     description: "Controla tus ingresos, gastos y ahorros de forma simple y efectiva.",
     url: 'https://finance-app-three-steel.vercel.app',
     siteName: 'FinanzApp',

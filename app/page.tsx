@@ -71,7 +71,7 @@ export default function LandingPage() {
               <span className="text-primary">inteligente</span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              FinanzApp te ayuda a controlar tus ingresos, gastos y ahorros de forma simple y efectiva.
+              FinancialAdvisor te ayuda a controlar tus ingresos, gastos y ahorros de forma simple y efectiva.
               Todo en un solo lugar.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">

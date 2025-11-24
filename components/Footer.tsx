@@ -48,7 +48,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Wallet className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">FinanzApp</span>
+              <span className="text-xl font-bold">FinancialAdvisor</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4 max-w-xs">
               Gestiona tus finanzas personales de manera inteligente. 
@@ -143,7 +143,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © {currentYear} FinanzApp. Todos los derechos reservados.
+              © {currentYear} FinancialAdvisor. Todos los derechos reservados.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <Link href="/privacy" className="hover:text-primary transition-colors">

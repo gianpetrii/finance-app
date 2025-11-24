@@ -89,7 +89,7 @@ export default function RegisterPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
           <CardDescription>
-            Ingresa tus datos para crear una cuenta en FinanzApp
+            Ingresa tus datos para crear una cuenta en FinancialAdvisor
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

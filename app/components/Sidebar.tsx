@@ -81,13 +81,13 @@ export function Sidebar() {
         </div>
 
         {/* Footer Info (when expanded) */}
-        {!isCollapsed && (
-          <div className="px-6 py-4 border-t">
-            <p className="text-xs text-muted-foreground">
-              FinanzApp v1.0
-            </p>
-          </div>
-        )}
+                {!isCollapsed && (
+                  <div className="px-6 py-4 border-t">
+                    <p className="text-xs text-muted-foreground">
+                      FinancialAdvisor v1.0
+                    </p>
+                  </div>
+                )}
       </nav>
 
       {/* Mobile Bottom Navigation */}

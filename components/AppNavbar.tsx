@@ -47,7 +47,7 @@ export function AppNavbar() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Wallet className="h-5 w-5" />
           </div>
-          <span className="hidden sm:inline-block text-lg">FinanzApp</span>
+          <span className="hidden sm:inline-block text-lg">FinancialAdvisor</span>
         </Link>
 
         {/* Right side - User menu */}
