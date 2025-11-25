@@ -17,15 +17,13 @@ import {
   DollarSign,
   CheckCircle,
   Clock,
-  Sparkles,
-  ChevronRight
+  Sparkles
 } from "lucide-react"
 import { format, differenceInDays } from "date-fns"
 import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
 
 // Categorías con iconos
-const categoryIcons = {
+const categoryIcons: Record<string, string> = {
   vacation: "✈️",
   emergency: "🛡️",
   purchase: "🛍️",
