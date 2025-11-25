@@ -154,7 +154,7 @@ export default function Dashboard() {
           Resumen de {getCurrentMonth()}
         </p>
       </div>
-
+      
       {/* KPIs Principales - Lo más importante primero */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
@@ -297,7 +297,7 @@ export default function Dashboard() {
               <CardTitle className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-primary"></span>
                 Transacciones Recientes
-              </CardTitle>
+            </CardTitle>
               <CardDescription>
                 Últimos movimientos de tu cuenta
               </CardDescription>
@@ -310,12 +310,12 @@ export default function Dashboard() {
               Ver todas →
             </Button>
           </div>
-        </CardHeader>
+          </CardHeader>
         <CardContent className="p-6">
           <RecentTransactions />
-        </CardContent>
-      </Card>
-
+          </CardContent>
+        </Card>
+        
       {/* Insights y Recomendaciones */}
       <Card className="border border-border/50 shadow-sm bg-gradient-to-br from-primary/5 to-primary/10">
         <CardContent className="p-6">
@@ -334,9 +334,9 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
+          </CardContent>
+        </Card>
+      
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
 

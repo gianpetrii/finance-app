@@ -5,7 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
 import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { useTransactions } from "@/lib/hooks/useTransactions"
+import { useFinancialSettings } from "@/lib/hooks/useFinancialSettings"
+import { deleteTransaction } from "@/lib/firebase/collections"
+import { useAuth } from "@/lib/hooks/useAuth"
 import { 
   Calendar as CalendarIcon,
   TrendingDown,
@@ -18,81 +23,65 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react"
-import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from "date-fns"
+import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, differenceInDays } from "date-fns"
 import { es } from "date-fns/locale"
-
-// Tipos
-interface Transaction {
-  id: string
-  date: Date
-  type: "expense" | "income"
-  amount: number
-  description: string
-  category: string
-}
-
-// Datos de ejemplo
-const currentMonth = new Date().getMonth()
-const currentYear = new Date().getFullYear()
-const DAILY_LIMIT = 200
-
-const initialTransactions: Transaction[] = [
-  {
-    id: "1",
-    date: new Date(currentYear, currentMonth, new Date().getDate()),
-    type: "expense",
-    amount: 80,
-    description: "Almuerzo",
-    category: "Alimentación"
-  },
-  {
-    id: "2",
-    date: new Date(currentYear, currentMonth, new Date().getDate()),
-    type: "expense",
-    amount: 30,
-    description: "Café",
-    category: "Alimentación"
-  },
-  {
-    id: "3",
-    date: new Date(currentYear, currentMonth, new Date().getDate()),
-    type: "expense",
-    amount: 40,
-    description: "Uber",
-    category: "Transporte"
-  },
-]
+import { toast } from "sonner"
 
 export default function DailyExpensesPage() {
+  const { user } = useAuth()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
-  const [transactions] = useState<Transaction[]>(initialTransactions)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [transactionType, setTransactionType] = useState<"expense" | "income">("expense")
+  
+  // Obtener datos reales
+  const { transactions, loading: transactionsLoading } = useTransactions({
+    startDate: startOfMonth(currentMonth),
+    endDate: endOfMonth(currentMonth)
+  })
+  const { settings, loading: settingsLoading } = useFinancialSettings()
+  
+  const DAILY_LIMIT = settings?.dailyBudget || 200
   
   // Calcular gastos del día seleccionado
   const getDayExpenses = (date: Date) => {
     return transactions
-      .filter(t => 
-        t.type === "expense" && 
-        isSameDay(t.date, date)
-      )
-      .reduce((sum, t) => sum + t.amount, 0)
+      .filter(t => {
+        const transDate = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+        return t.type === "expense" && isSameDay(transDate, date)
+      })
+      .reduce((sum, t) => sum + (t.amount || 0), 0)
   }
 
   // Calcular ingresos del día seleccionado
   const getDayIncome = (date: Date) => {
     return transactions
-      .filter(t => 
-        t.type === "income" && 
-        isSameDay(t.date, date)
-      )
-      .reduce((sum, t) => sum + t.amount, 0)
+      .filter(t => {
+        const transDate = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+        return t.type === "income" && isSameDay(transDate, date)
+      })
+      .reduce((sum, t) => sum + (t.amount || 0), 0)
   }
 
   // Obtener transacciones del día seleccionado
   const getDayTransactions = (date: Date) => {
-    return transactions.filter(t => isSameDay(t.date, date))
+    return transactions.filter(t => {
+      const transDate = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+      return isSameDay(transDate, date)
+    })
+  }
+  
+  // Eliminar transacción
+  const handleDeleteTransaction = async (transactionId: string) => {
+    if (!user) return
+    
+    try {
+      await deleteTransaction(user.uid, transactionId)
+      toast.success("Transacción eliminada")
+    } catch (error) {
+      console.error("Error al eliminar:", error)
+      toast.error("Error al eliminar la transacción")
+    }
   }
 
   // Calcular balance acumulado del mes (solo días pasados)
@@ -157,6 +146,15 @@ export default function DailyExpensesPage() {
     if (dayBalance > 0) return "bg-green-500/20 hover:bg-green-500/30" // Sobró dinero
     if (dayBalance === 0) return "bg-muted/40 hover:bg-muted/50" // Gastó exactamente el presupuesto
     return "bg-red-500/20 hover:bg-red-500/30" // Se pasó del presupuesto
+  }
+
+  // Loading state
+  if (transactionsLoading || settingsLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
   }
 
   return (
@@ -457,8 +455,10 @@ export default function DailyExpensesPage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{transaction.description}</p>
-                          <p className="text-xs text-muted-foreground truncate">{transaction.category}</p>
+                          <p className="font-medium text-sm truncate">{transaction.category}</p>
+                          {transaction.notes && (
+                            <p className="text-xs text-muted-foreground truncate">{transaction.notes}</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -469,7 +469,12 @@ export default function DailyExpensesPage() {
                         }`}>
                           {transaction.type === "expense" ? "-" : "+"}${transaction.amount.toLocaleString()}
                         </p>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => handleDeleteTransaction(transaction.id)}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>

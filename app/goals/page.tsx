@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import { useSavingsGoals } from "@/lib/hooks/useSavingsGoals"
 import { 
   Target,
   TrendingUp,
@@ -15,66 +17,12 @@ import {
   DollarSign,
   CheckCircle,
   Clock,
-  Sparkles
+  Sparkles,
+  ChevronRight
 } from "lucide-react"
 import { format, differenceInDays } from "date-fns"
 import { es } from "date-fns/locale"
-
-// Tipos
-interface SavingsGoal {
-  id: string
-  name: string
-  description: string
-  targetAmount: number
-  currentAmount: number
-  deadline: Date
-  category: "vacation" | "emergency" | "purchase" | "education" | "other"
-  color: string
-}
-
-// Datos de ejemplo
-const initialGoals: SavingsGoal[] = [
-  {
-    id: "1",
-    name: "Vacaciones en Europa",
-    description: "Viaje de 15 días por España e Italia",
-    targetAmount: 5000,
-    currentAmount: 3200,
-    deadline: new Date(2025, 6, 1), // Julio 2025
-    category: "vacation",
-    color: "from-blue-500 to-cyan-500"
-  },
-  {
-    id: "2",
-    name: "Fondo de Emergencia",
-    description: "6 meses de gastos básicos",
-    targetAmount: 12000,
-    currentAmount: 8500,
-    deadline: new Date(2025, 11, 31), // Diciembre 2025
-    category: "emergency",
-    color: "from-green-500 to-emerald-500"
-  },
-  {
-    id: "3",
-    name: "Laptop Nueva",
-    description: "MacBook Pro M3 para trabajo",
-    targetAmount: 2500,
-    currentAmount: 1800,
-    deadline: new Date(2025, 3, 15), // Abril 2025
-    category: "purchase",
-    color: "from-purple-500 to-pink-500"
-  },
-  {
-    id: "4",
-    name: "Curso de Programación",
-    description: "Bootcamp Full Stack Development",
-    targetAmount: 1500,
-    currentAmount: 1500,
-    deadline: new Date(2025, 2, 1), // Marzo 2025
-    category: "education",
-    color: "from-orange-500 to-yellow-500"
-  }
-]
+import { cn } from "@/lib/utils"
 
 // Categorías con iconos
 const categoryIcons = {
@@ -86,32 +34,47 @@ const categoryIcons = {
 }
 
 export default function GoalsPage() {
-  const [goals] = useState<SavingsGoal[]>(initialGoals)
-  const [selectedGoalId, setSelectedGoalId] = useState<string>(goals[0]?.id || "")
+  const { goals, loading } = useSavingsGoals()
+  const [selectedGoal, setSelectedGoal] = useState<any>(null)
 
-  // Meta seleccionada
-  const selectedGoal = goals.find(g => g.id === selectedGoalId) || goals[0]
+  useEffect(() => {
+    if (goals.length > 0 && !selectedGoal) {
+      setSelectedGoal(goals[0])
+    }
+  }, [goals, selectedGoal])
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
 
   // Calcular estadísticas generales
-  const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0)
-  const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0)
-  const completedGoals = goals.filter(g => g.currentAmount >= g.targetAmount).length
-  const activeGoals = goals.filter(g => g.currentAmount < g.targetAmount).length
+  const totalSaved = goals.reduce((sum, goal) => sum + (goal.currentAmount || 0), 0)
+  const totalTarget = goals.reduce((sum, goal) => sum + (goal.targetAmount || 0), 0)
+  const completedGoals = goals.filter(g => (g.currentAmount || 0) >= (g.targetAmount || 0)).length
+  const activeGoals = goals.filter(g => (g.currentAmount || 0) < (g.targetAmount || 0)).length
 
   // Calcular porcentaje de progreso
-  const getProgress = (goal: SavingsGoal) => {
-    return Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
+  const getProgress = (goal: any) => {
+    const current = goal.currentAmount || 0
+    const target = goal.targetAmount || 1
+    return Math.min((current / target) * 100, 100)
   }
 
   // Calcular días restantes
-  const getDaysRemaining = (deadline: Date) => {
-    const days = differenceInDays(deadline, new Date())
+  const getDaysRemaining = (deadline: any) => {
+    const deadlineDate = deadline?.toDate ? deadline.toDate() : new Date(deadline)
+    const days = differenceInDays(deadlineDate, new Date())
     return days > 0 ? days : 0
   }
 
   // Calcular cuánto falta ahorrar por día
-  const getDailyRequired = (goal: SavingsGoal) => {
-    const remaining = goal.targetAmount - goal.currentAmount
+  const getDailyRequired = (goal: any) => {
+    const remaining = (goal.targetAmount || 0) - (goal.currentAmount || 0)
     const days = getDaysRemaining(goal.deadline)
     return days > 0 ? remaining / days : 0
   }
@@ -202,7 +165,7 @@ export default function GoalsPage() {
           {goals.map((goal) => {
             const progress = getProgress(goal)
             const isCompleted = progress >= 100
-            const isSelected = selectedGoalId === goal.id
+            const isSelected = selectedGoal?.id === goal.id
 
             return (
               <Card
@@ -210,7 +173,7 @@ export default function GoalsPage() {
                 className={`cursor-pointer transition-all hover:shadow-md ${
                   isSelected ? "border-2 border-primary shadow-md" : "border-2"
                 } ${isCompleted ? "border-green-500/50" : ""}`}
-                onClick={() => setSelectedGoalId(goal.id)}
+                onClick={() => setSelectedGoal(goal)}
               >
                 <div className={`h-1 bg-gradient-to-r ${goal.color}`} />
                 <CardContent className="pt-4 space-y-3">
