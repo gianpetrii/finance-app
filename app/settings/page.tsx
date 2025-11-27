@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/lib/hooks/useAuth"
 import { useFinancialSettings } from "@/lib/hooks/useFinancialSettings"
 import { createFinancialSettings } from "@/lib/firebase/collections"
@@ -40,6 +41,8 @@ export default function SettingsPage() {
   const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([])
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
   const [shouldSaveOnTypeChange, setShouldSaveOnTypeChange] = useState(false)
+  const [paymentDay, setPaymentDay] = useState("1")
+  const [salaryDay, setSalaryDay] = useState("1")
 
   // Guardar cuando el usuario sale del input
   const handleSave = useCallback(async () => {
@@ -51,6 +54,8 @@ export default function SettingsPage() {
     try {
       const settingsData = {
         monthlyIncome: parseFloat(salary),
+        paymentDay: parseInt(paymentDay),
+        salaryDay: parseInt(salaryDay),
         fixedExpenses: fixedExpenses
           .filter(exp => exp.name.trim() && parseFloat(exp.amount) > 0)
           .map(exp => ({
@@ -83,6 +88,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings) {
       setSalary(settings.monthlyIncome?.toString() || "")
+      setPaymentDay(settings.paymentDay?.toString() || "1")
+      setSalaryDay(settings.salaryDay?.toString() || "1")
       setFixedExpenses(settings.fixedExpenses?.map((exp: any, index: number) => ({
         id: index + 1,
         name: exp.name || "",
@@ -276,6 +283,28 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="salaryDay">Día de Cobro</Label>
+              <Select value={salaryDay} onValueChange={(value) => {
+                setSalaryDay(value)
+                setTimeout(handleSave, 100)
+              }}>
+                <SelectTrigger id="salaryDay">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                    <SelectItem key={day} value={day.toString()}>
+                      Día {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Día del mes en que recibes tu salario
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -340,6 +369,28 @@ export default function SettingsPage() {
                 No hay gastos fijos
               </p>
             )}
+            
+            <div className="pt-4 border-t space-y-2">
+              <Label htmlFor="paymentDay">Día de Pago de Gastos Fijos</Label>
+              <Select value={paymentDay} onValueChange={(value) => {
+                setPaymentDay(value)
+                setTimeout(handleSave, 100)
+              }}>
+                <SelectTrigger id="paymentDay">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                    <SelectItem key={day} value={day.toString()}>
+                      Día {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Día del mes en que debes pagar tus gastos fijos
+              </p>
+            </div>
           </CardContent>
         </Card>
 

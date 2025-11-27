@@ -151,7 +151,7 @@ export function NewGoalModal({ open, onOpenChange }: NewGoalModalProps) {
                   {targetDate ? format(targetDate, "PPP", { locale: es }) : "Selecciona una fecha"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={targetDate}

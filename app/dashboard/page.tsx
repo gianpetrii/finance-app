@@ -54,17 +54,15 @@ function KPICard({
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl sm:text-3xl font-bold">{value}</h3>
-              {change && (
-                <span className={`text-sm font-medium flex items-center gap-1 ${changeColors[changeType || "neutral"]}`}>
-                  {TrendIcon && <TrendIcon className="h-4 w-4" />}
-                  {change}
-                </span>
-              )}
-            </div>
+            <h3 className="text-2xl sm:text-3xl font-bold">{value}</h3>
+            {change && (
+              <span className={`text-xs font-medium flex items-center gap-1 ${changeColors[changeType || "neutral"]}`}>
+                {TrendIcon && <TrendIcon className="h-3 w-3" />}
+                {change}
+              </span>
+            )}
           </div>
-          <div className="rounded-lg bg-primary/10 p-3">
+          <div className="rounded-lg bg-primary/10 p-3 shrink-0">
             <Icon className="h-6 w-6 text-primary" />
           </div>
         </div>
@@ -168,7 +166,7 @@ export default function Dashboard() {
         <KPICard
           title="Gastos Hoy"
           value={`$${gastosHoy.toLocaleString()}`}
-          change={`$${dailyBudget.toFixed(0)} límite`}
+          change={`$${dailyBudget.toLocaleString('es-ES', { maximumFractionDigits: 0 })} límite`}
           changeType={gastosHoy > dailyBudget ? "negative" : "positive"}
           icon={TrendingDown}
         />
@@ -182,7 +180,7 @@ export default function Dashboard() {
         />
         <KPICard
           title="Presupuesto Diario"
-          value={`$${dailyBudget.toFixed(0)}`}
+          value={`$${dailyBudget.toLocaleString('es-ES', { maximumFractionDigits: 0 })}`}
           change={`${new Date().getDate()} días transcurridos`}
           changeType="neutral"
           icon={Calendar}

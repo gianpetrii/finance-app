@@ -6,7 +6,7 @@ import type React from "react"
 import { ClientWrapper } from "./components/ClientWrapper"
 import { Toaster } from "sonner"
 import { ConditionalLayout } from "./components/ConditionalLayout"
-import { LoadingBar } from "@/components/LoadingBar"
+import { NavigationLoader } from "@/components/NavigationLoader"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -63,7 +63,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LoadingBar />
+          <NavigationLoader />
           <ClientWrapper />
           <Toaster position="top-center" richColors />
           <div className="flex min-h-screen flex-col">
