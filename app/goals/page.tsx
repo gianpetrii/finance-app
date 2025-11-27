@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
+import { NewGoalModal } from "@/components/NewGoalModal"
 import { useSavingsGoals } from "@/lib/hooks/useSavingsGoals"
 import { 
   Target,
@@ -34,6 +35,7 @@ const categoryIcons: Record<string, string> = {
 export default function GoalsPage() {
   const { goals, loading } = useSavingsGoals()
   const [selectedGoal, setSelectedGoal] = useState<any>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     if (goals.length > 0 && !selectedGoal) {
@@ -90,7 +92,7 @@ export default function GoalsPage() {
             Alcanza tus objetivos financieros paso a paso
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsModalOpen(true)}>
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Nueva Meta</span>
         </Button>
@@ -337,6 +339,9 @@ export default function GoalsPage() {
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
+      
+      {/* Modal de Nueva Meta */}
+      <NewGoalModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </div>
   )
 }

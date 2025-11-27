@@ -5,6 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { useTransactions } from "@/lib/hooks/useTransactions"
+import { useAuth } from "@/lib/hooks/useAuth"
+import { deleteTransaction } from "@/lib/firebase/collections"
 import { 
   Select,
   SelectContent,
@@ -15,108 +20,18 @@ import {
 import { 
   FileText,
   Search,
-  Filter,
   TrendingDown,
   TrendingUp,
-  Calendar,
-  Download,
   Plus,
-  Edit,
   Trash2,
-  ArrowUpDown
+  Filter,
+  ArrowUpDown,
+  Download,
+  Calendar
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-
-// Tipos
-interface Transaction {
-  id: string
-  date: Date
-  type: "expense" | "income"
-  amount: number
-  description: string
-  category: string
-  paymentMethod: string
-}
-
-// Datos de ejemplo
-const currentMonth = new Date().getMonth()
-const currentYear = new Date().getFullYear()
-
-const initialTransactions: Transaction[] = [
-  {
-    id: "1",
-    date: new Date(currentYear, currentMonth, 18),
-    type: "income",
-    amount: 3500,
-    description: "Salario mensual",
-    category: "Salario",
-    paymentMethod: "Transferencia"
-  },
-  {
-    id: "2",
-    date: new Date(currentYear, currentMonth, 17),
-    type: "expense",
-    amount: 150,
-    description: "Compras en supermercado",
-    category: "Alimentación",
-    paymentMethod: "Tarjeta de débito"
-  },
-  {
-    id: "3",
-    date: new Date(currentYear, currentMonth, 16),
-    type: "expense",
-    amount: 80,
-    description: "Cena en restaurante",
-    category: "Ocio",
-    paymentMethod: "Tarjeta de crédito"
-  },
-  {
-    id: "4",
-    date: new Date(currentYear, currentMonth, 15),
-    type: "expense",
-    amount: 45,
-    description: "Uber al trabajo",
-    category: "Transporte",
-    paymentMethod: "Efectivo"
-  },
-  {
-    id: "5",
-    date: new Date(currentYear, currentMonth, 14),
-    type: "income",
-    amount: 500,
-    description: "Freelance proyecto web",
-    category: "Freelance",
-    paymentMethod: "Transferencia"
-  },
-  {
-    id: "6",
-    date: new Date(currentYear, currentMonth, 13),
-    type: "expense",
-    amount: 120,
-    description: "Factura de luz",
-    category: "Servicios",
-    paymentMethod: "Transferencia"
-  },
-  {
-    id: "7",
-    date: new Date(currentYear, currentMonth, 12),
-    type: "expense",
-    amount: 60,
-    description: "Suscripción Netflix",
-    category: "Entretenimiento",
-    paymentMethod: "Tarjeta de crédito"
-  },
-  {
-    id: "8",
-    date: new Date(currentYear, currentMonth, 10),
-    type: "expense",
-    amount: 200,
-    description: "Compra de ropa",
-    category: "Ropa",
-    paymentMethod: "Tarjeta de débito"
-  },
-]
+import { toast } from "sonner"
 
 // Categorías
 const categories = [
@@ -134,48 +49,74 @@ const categories = [
 ]
 
 export default function TransactionsPage() {
-  const [transactions] = useState<Transaction[]>(initialTransactions)
+  const { user } = useAuth()
+  const { transactions, loading } = useTransactions()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
   const [filterCategory, setFilterCategory] = useState("Todas")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  const handleDelete = async (transactionId: string) => {
+    if (!user) return
+    
+    try {
+      await deleteTransaction(user.uid, transactionId)
+      toast.success("Transacción eliminada")
+    } catch (error) {
+      console.error("Error:", error)
+      toast.error("Error al eliminar")
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
 
   // Filtrar y ordenar transacciones
   const filteredTransactions = transactions
     .filter(t => {
-      const matchesSearch = t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           t.category.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch = (t.category?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+                           (t.notes?.toLowerCase() || "").includes(searchTerm.toLowerCase())
       const matchesType = filterType === "all" || t.type === filterType
       const matchesCategory = filterCategory === "Todas" || t.category === filterCategory
       return matchesSearch && matchesType && matchesCategory
     })
     .sort((a, b) => {
+      const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date)
+      const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date)
+      
       if (sortOrder === "desc") {
-        return b.date.getTime() - a.date.getTime()
+        return dateB.getTime() - dateA.getTime()
       }
-      return a.date.getTime() - b.date.getTime()
+      return dateA.getTime() - dateB.getTime()
     })
 
   // Calcular totales
   const totalIncome = filteredTransactions
     .filter(t => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
 
   const totalExpenses = filteredTransactions
     .filter(t => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
 
   const balance = totalIncome - totalExpenses
 
   // Agrupar transacciones por fecha
-  const groupedTransactions = filteredTransactions.reduce((groups, transaction) => {
-    const dateKey = format(transaction.date, "yyyy-MM-dd")
+  const groupedTransactions: Record<string, any[]> = filteredTransactions.reduce((groups: Record<string, any[]>, transaction) => {
+    const transDate = transaction.date?.toDate ? transaction.date.toDate() : new Date(transaction.date)
+    const dateKey = format(transDate, "yyyy-MM-dd")
     if (!groups[dateKey]) {
       groups[dateKey] = []
     }
     groups[dateKey].push(transaction)
     return groups
-  }, {} as Record<string, Transaction[]>)
+  }, {})
 
   return (
     <div className="space-y-6">
@@ -190,7 +131,7 @@ export default function TransactionsPage() {
             Historial completo de tus movimientos
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsModalOpen(true)}>
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Nueva</span>
         </Button>
@@ -390,7 +331,10 @@ export default function TransactionsPage() {
 
                           {/* Información */}
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{transaction.description}</p>
+                            <p className="font-medium truncate">{transaction.category}</p>
+                            {transaction.notes && (
+                              <p className="text-sm text-muted-foreground truncate">{transaction.notes}</p>
+                            )}
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="secondary" className="text-xs">
                                 {transaction.category}
@@ -414,10 +358,12 @@ export default function TransactionsPage() {
 
                           {/* Acciones */}
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => handleDelete(transaction.id)}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -434,6 +380,13 @@ export default function TransactionsPage() {
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
+      
+      {/* Modal de Nueva Transacción */}
+      <NewTransactionModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        defaultType="expense"
+      />
     </div>
   )
 }

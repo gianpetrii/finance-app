@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import { useTransactions } from "@/lib/hooks/useTransactions"
 import { 
   Select,
   SelectContent,
@@ -23,6 +25,8 @@ import {
   ArrowDownCircle,
   Activity
 } from "lucide-react"
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
+import { es } from "date-fns/locale"
 
 // Tipos
 interface MonthlyData {
@@ -32,48 +36,105 @@ interface MonthlyData {
   savings: number
 }
 
-interface CategoryExpense {
-  category: string
-  amount: number
-  percentage: number
-  color: string
+const categoryColors: Record<string, string> = {
+  "Alimentación": "bg-orange-500",
+  "Transporte": "bg-blue-500",
+  "Servicios": "bg-yellow-500",
+  "Ocio": "bg-purple-500",
+  "Salud": "bg-green-500",
+  "Ropa": "bg-pink-500",
+  "Educación": "bg-indigo-500",
+  "Entretenimiento": "bg-red-500",
+  "Otros": "bg-gray-500"
 }
 
-// Datos de ejemplo
-const monthlyData: MonthlyData[] = [
-  { month: "Enero", income: 4500, expenses: 3200, savings: 1300 },
-  { month: "Febrero", income: 4500, expenses: 3500, savings: 1000 },
-  { month: "Marzo", income: 5000, expenses: 3800, savings: 1200 },
-  { month: "Abril", income: 4500, expenses: 3300, savings: 1200 },
-  { month: "Mayo", income: 5500, expenses: 4000, savings: 1500 },
-  { month: "Junio", income: 4500, expenses: 3600, savings: 900 },
-]
-
-const categoryExpenses: CategoryExpense[] = [
-  { category: "Alimentación", amount: 1500, percentage: 35, color: "bg-orange-500" },
-  { category: "Transporte", amount: 800, percentage: 18, color: "bg-blue-500" },
-  { category: "Servicios", amount: 700, percentage: 16, color: "bg-yellow-500" },
-  { category: "Ocio", amount: 600, percentage: 14, color: "bg-purple-500" },
-  { category: "Salud", amount: 400, percentage: 9, color: "bg-green-500" },
-  { category: "Otros", amount: 300, percentage: 8, color: "bg-gray-500" },
-]
-
 export default function ReportsPage() {
+  const { transactions, loading } = useTransactions()
   const [selectedPeriod, setSelectedPeriod] = useState("6months")
+
+  // Calcular datos mensuales desde transacciones reales
+  const monthlyData = useMemo(() => {
+    if (!transactions.length) return []
+    
+    const months = selectedPeriod === "6months" ? 6 : 12
+    const data: MonthlyData[] = []
+    
+    for (let i = months - 1; i >= 0; i--) {
+      const date = subMonths(new Date(), i)
+      const monthStart = startOfMonth(date)
+      const monthEnd = endOfMonth(date)
+      
+      const monthTransactions = transactions.filter(t => {
+        const transDate = t.date?.toDate ? t.date.toDate() : new Date(t.date)
+        return transDate >= monthStart && transDate <= monthEnd
+      })
+      
+      const income = monthTransactions
+        .filter(t => t.type === "income")
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+      
+      const expenses = monthTransactions
+        .filter(t => t.type === "expense")
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+      
+      data.push({
+        month: format(date, "MMMM", { locale: es }),
+        income,
+        expenses,
+        savings: income - expenses
+      })
+    }
+    
+    return data
+  }, [transactions, selectedPeriod])
+
+  // Calcular gastos por categoría
+  const categoryExpenses = useMemo(() => {
+    if (!transactions.length) return []
+    
+    const expenseTransactions = transactions.filter(t => t.type === "expense")
+    const totalExpenses = expenseTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+    
+    if (totalExpenses === 0) return []
+    
+    const categoryMap: Record<string, number> = {}
+    
+    expenseTransactions.forEach(t => {
+      const category = t.category || "Otros"
+      categoryMap[category] = (categoryMap[category] || 0) + (t.amount || 0)
+    })
+    
+    return Object.entries(categoryMap)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        percentage: Math.round((amount / totalExpenses) * 100),
+        color: categoryColors[category] || "bg-gray-500"
+      }))
+      .sort((a, b) => b.amount - a.amount)
+  }, [transactions])
 
   // Calcular estadísticas
   const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0)
   const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0)
   const totalSavings = monthlyData.reduce((sum, m) => sum + m.savings, 0)
-  const avgMonthlyIncome = totalIncome / monthlyData.length
-  const avgMonthlyExpenses = totalExpenses / monthlyData.length
-  const savingsRate = (totalSavings / totalIncome) * 100
+  const avgMonthlyIncome = monthlyData.length > 0 ? totalIncome / monthlyData.length : 0
+  const avgMonthlyExpenses = monthlyData.length > 0 ? totalExpenses / monthlyData.length : 0
+  const savingsRate = totalIncome > 0 ? (totalSavings / totalIncome) * 100 : 0
 
   // Comparación con mes anterior
-  const currentMonth = monthlyData[monthlyData.length - 1]
-  const previousMonth = monthlyData[monthlyData.length - 2]
-  const incomeChange = ((currentMonth.income - previousMonth.income) / previousMonth.income) * 100
-  const expensesChange = ((currentMonth.expenses - previousMonth.expenses) / previousMonth.expenses) * 100
+  const currentMonth = monthlyData[monthlyData.length - 1] || { income: 0, expenses: 0, savings: 0 }
+  const previousMonth = monthlyData[monthlyData.length - 2] || { income: 0, expenses: 0, savings: 0 }
+  const incomeChange = previousMonth.income > 0 ? ((currentMonth.income - previousMonth.income) / previousMonth.income) * 100 : 0
+  const expensesChange = previousMonth.expenses > 0 ? ((currentMonth.expenses - previousMonth.expenses) / previousMonth.expenses) * 100 : 0
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -282,6 +343,46 @@ export default function ReportsPage() {
         </CardContent>
       </Card>
 
+      {/* Comparación de Promedios */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Promedios del Período</CardTitle>
+          <CardDescription>
+            Análisis de tus promedios mensuales
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm">Ingreso Promedio</span>
+              </div>
+              <p className="text-3xl font-bold">${avgMonthlyIncome.toFixed(0)}</p>
+              <p className="text-xs text-muted-foreground">por mes</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <TrendingDown className="h-4 w-4" />
+                <span className="text-sm">Gasto Promedio</span>
+              </div>
+              <p className="text-3xl font-bold">${avgMonthlyExpenses.toFixed(0)}</p>
+              <p className="text-xs text-muted-foreground">por mes</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <DollarSign className="h-4 w-4" />
+                <span className="text-sm">Ahorro Promedio</span>
+              </div>
+              <p className="text-3xl font-bold">
+                ${((avgMonthlyIncome - avgMonthlyExpenses)).toFixed(0)}
+              </p>
+              <p className="text-xs text-muted-foreground">por mes</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Distribución por Categorías */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
@@ -402,46 +503,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Comparación de Promedios */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Promedios del Período</CardTitle>
-          <CardDescription>
-            Análisis de tus promedios mensuales
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm">Ingreso Promedio</span>
-              </div>
-              <p className="text-3xl font-bold">${avgMonthlyIncome.toFixed(0)}</p>
-              <p className="text-xs text-muted-foreground">por mes</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <TrendingDown className="h-4 w-4" />
-                <span className="text-sm">Gasto Promedio</span>
-              </div>
-              <p className="text-3xl font-bold">${avgMonthlyExpenses.toFixed(0)}</p>
-              <p className="text-xs text-muted-foreground">por mes</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <DollarSign className="h-4 w-4" />
-                <span className="text-sm">Ahorro Promedio</span>
-              </div>
-              <p className="text-3xl font-bold">
-                ${((avgMonthlyIncome - avgMonthlyExpenses)).toFixed(0)}
-              </p>
-              <p className="text-xs text-muted-foreground">por mes</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>

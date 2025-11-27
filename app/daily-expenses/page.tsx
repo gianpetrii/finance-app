@@ -180,15 +180,15 @@ export default function DailyExpensesPage() {
                     Haz clic en un día para ver sus transacciones
                   </CardDescription>
                 </div>
-                <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center">
                   <Button
                     variant="outline"
                     size="icon"
                     className="h-9 w-9"
                     onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
                   <Button
                     variant="outline"
                     className="h-9 px-3 text-sm"
@@ -206,11 +206,11 @@ export default function DailyExpensesPage() {
                     className="h-9 w-9"
                     onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
                   >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
-            </CardHeader>
+            </div>
+          </CardHeader>
             <CardContent>
               {/* Balance Acumulado del Mes */}
               <div className="mb-6 p-4 rounded-lg border-2 bg-card">
@@ -237,10 +237,10 @@ export default function DailyExpensesPage() {
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Días restantes</p>
                     <p className="text-3xl font-bold">{daysRemaining}</p>
-                  </div>
-                </div>
-              </div>
-
+                        </div>
+                      </div>
+            </div>
+            
               {/* Leyenda */}
               <div className="flex flex-wrap gap-4 mb-6 text-sm">
                 <div className="flex items-center gap-2">
@@ -299,9 +299,9 @@ export default function DailyExpensesPage() {
                     </button>
                   )
                 })}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
         </div>
 
         {/* Sidebar Derecho - Ocupa 1 columna en desktop */}
@@ -321,12 +321,12 @@ export default function DailyExpensesPage() {
                 </div>
                 {isToday(selectedDate) && (
                   <Badge variant="default" className="text-xs">Hoy</Badge>
-                )}
-              </div>
-            </CardHeader>
+              )}
+            </div>
+          </CardHeader>
             <CardContent className="space-y-4">
               {/* Presupuesto Diario */}
-              <div className="space-y-2">
+                <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground">Presupuesto Diario</p>
@@ -355,7 +355,7 @@ export default function DailyExpensesPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+                </div>
 
               {/* Stats del Día */}
               <div className="grid grid-cols-2 gap-3 pt-2 border-t">
@@ -438,8 +438,8 @@ export default function DailyExpensesPage() {
               ) : (
                 <div className="space-y-2">
                   {todayTransactions.map((transaction) => (
-                    <div
-                      key={transaction.id}
+                        <div 
+                          key={transaction.id} 
                       className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -477,16 +477,16 @@ export default function DailyExpensesPage() {
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                          </div>
+                        </div>
+                      ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-
+            </div>
+            
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
 
@@ -501,4 +501,4 @@ export default function DailyExpensesPage() {
       />
     </div>
   )
-}
+} 

@@ -296,6 +296,7 @@ export const createAccount = async (userId: string, accountData: any) => {
     id: accountId,
     userId,
     isActive: true,
+    deletedAt: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   })

@@ -1,187 +1,37 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Spinner } from "@/components/ui/spinner"
+import { NewTransactionModal } from "@/components/NewTransactionModal"
+import { NewAccountModal } from "@/components/NewAccountModal"
+import { useAccounts } from "@/lib/hooks/useAccounts"
+import { useCreditCards } from "@/lib/hooks/useCreditCards"
+import { useDebts } from "@/lib/hooks/useDebts"
+import { useAuth } from "@/lib/hooks/useAuth"
+import { useTransactions } from "@/lib/hooks/useTransactions"
 import { 
   Wallet,
   Plus,
-  Edit,
-  Trash2,
   TrendingUp,
   TrendingDown,
   Eye,
   EyeOff,
-  ArrowRightLeft,
   DollarSign,
   CreditCard,
   Building2,
   Users,
   CheckCircle,
   Clock,
-  AlertCircle,
-  Bell
+  AlertCircle
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-
-// Tipos
-interface BankAccount {
-  id: string
-  name: string
-  type: "checking" | "savings" | "investment"
-  balance: number
-  bank: string
-  accountNumber: string
-  color: string
-}
-
-interface CreditCard {
-  id: string
-  name: string
-  type: "credit" | "debit"
-  balance: number
-  limit?: number
-  bank: string
-  cardNumber: string
-  expiry: string
-  dueDate?: Date
-  color: string
-}
-
-interface Debt {
-  id: string
-  type: "receivable" | "payable" // Me deben o Debo
-  personName: string
-  amount: number
-  amountPaid: number
-  concept: string
-  date: Date
-  status: "pending" | "partial" | "paid"
-  groupId?: string // Para agrupar gastos divididos
-}
-
-interface GroupExpense {
-  id: string
-  concept: string
-  totalAmount: number
-  paidBy: string
-  date: Date
-  debts: Debt[]
-}
-
-// Datos de ejemplo - Cuentas Bancarias
-const initialAccounts: BankAccount[] = [
-  {
-    id: "1",
-    name: "Cuenta Corriente Principal",
-    type: "checking",
-    balance: 5420.50,
-    bank: "Banco Nacional",
-    accountNumber: "****1234",
-    color: "from-blue-500 to-cyan-500"
-  },
-  {
-    id: "2",
-    name: "Cuenta de Ahorros",
-    type: "savings",
-    balance: 12350.00,
-    bank: "Banco Nacional",
-    accountNumber: "****5678",
-    color: "from-green-500 to-emerald-500"
-  },
-  {
-    id: "3",
-    name: "Inversiones",
-    type: "investment",
-    balance: 25800.00,
-    bank: "Broker Online",
-    accountNumber: "****3456",
-    color: "from-orange-500 to-red-500"
-  }
-]
-
-// Datos de ejemplo - Tarjetas
-const initialCards: CreditCard[] = [
-  {
-    id: "1",
-    name: "Visa Platinum",
-    type: "credit",
-    balance: 2150,
-    limit: 5000,
-    bank: "Banco Internacional",
-    cardNumber: "**** **** **** 9012",
-    expiry: "12/26",
-    dueDate: new Date(2025, 11, 10),
-    color: "from-purple-500 to-pink-500"
-  },
-  {
-    id: "2",
-    name: "Mastercard Gold",
-    type: "credit",
-    balance: 850,
-    limit: 3000,
-    bank: "Banco Nacional",
-    cardNumber: "**** **** **** 3456",
-    expiry: "08/27",
-    dueDate: new Date(2025, 11, 15),
-    color: "from-yellow-500 to-orange-500"
-  },
-  {
-    id: "3",
-    name: "Tarjeta de Débito",
-    type: "debit",
-    balance: 2500,
-    bank: "Banco Nacional",
-    cardNumber: "**** **** **** 7890",
-    expiry: "06/25",
-    color: "from-indigo-500 to-blue-500"
-  }
-]
-
-// Datos de ejemplo - Gastos Grupales
-const initialGroupExpenses: GroupExpense[] = [
-  {
-    id: "1",
-    concept: "Asado del Sábado",
-    totalAmount: 500,
-    paidBy: "Tú",
-    date: new Date(2025, 10, 16),
-    debts: [
-      { id: "d1", type: "receivable", personName: "Juan", amount: 100, amountPaid: 100, concept: "Asado del Sábado", date: new Date(2025, 10, 16), status: "paid", groupId: "1" },
-      { id: "d2", type: "receivable", personName: "María", amount: 100, amountPaid: 0, concept: "Asado del Sábado", date: new Date(2025, 10, 16), status: "pending", groupId: "1" },
-      { id: "d3", type: "receivable", personName: "Pedro", amount: 100, amountPaid: 100, concept: "Asado del Sábado", date: new Date(2025, 10, 16), status: "paid", groupId: "1" },
-      { id: "d4", type: "receivable", personName: "Ana", amount: 100, amountPaid: 50, concept: "Asado del Sábado", date: new Date(2025, 10, 16), status: "partial", groupId: "1" },
-    ]
-  }
-]
-
-// Deudas individuales adicionales
-const initialIndividualDebts: Debt[] = [
-  {
-    id: "i1",
-    type: "receivable",
-    personName: "Carlos",
-    amount: 250,
-    amountPaid: 0,
-    concept: "Préstamo personal",
-    date: new Date(2025, 10, 10),
-    status: "pending"
-  },
-  {
-    id: "i2",
-    type: "payable",
-    personName: "Laura",
-    amount: 150,
-    amountPaid: 0,
-    concept: "Cena del viernes",
-    date: new Date(2025, 10, 18),
-    status: "pending"
-  }
-]
+import { toast } from "sonner"
 
 const accountTypeLabels = {
   checking: "Cuenta Corriente",
@@ -190,39 +40,92 @@ const accountTypeLabels = {
 }
 
 export default function WalletPage() {
-  const [accounts] = useState<BankAccount[]>(initialAccounts)
-  const [cards] = useState<CreditCard[]>(initialCards)
-  const [groupExpenses] = useState<GroupExpense[]>(initialGroupExpenses)
-  const [individualDebts] = useState<Debt[]>(initialIndividualDebts)
+  const { user } = useAuth()
+  const { accounts, loading: loadingAccounts } = useAccounts()
+  const { cards, loading: loadingCards } = useCreditCards()
+  const { debts, loading: loadingDebts } = useDebts()
+  const { transactions } = useTransactions()
+  
   const [hideBalances, setHideBalances] = useState(false)
   const [activeTab, setActiveTab] = useState("accounts")
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false)
+
+  const loading = loadingAccounts || loadingCards || loadingDebts
 
   // Calcular totales de cuentas
-  const totalAccountsBalance = accounts.reduce((sum, a) => sum + a.balance, 0)
+  const totalAccountsBalance = useMemo(() => 
+    accounts.reduce((sum, a) => sum + (a.balance || 0), 0),
+    [accounts]
+  )
 
   // Calcular totales de tarjetas
-  const creditCards = cards.filter(c => c.type === "credit")
-  const debitCards = cards.filter(c => c.type === "debit")
-  const totalCreditUsed = creditCards.reduce((sum, c) => sum + c.balance, 0)
-  const totalCreditLimit = creditCards.reduce((sum, c) => sum + (c.limit || 0), 0)
-  const totalCreditAvailable = totalCreditLimit - totalCreditUsed
-  const totalDebitBalance = debitCards.reduce((sum, c) => sum + c.balance, 0)
-
-  // Calcular deudas
-  const allDebts = [
-    ...groupExpenses.flatMap(g => g.debts),
-    ...individualDebts
-  ]
-  const receivables = allDebts.filter(d => d.type === "receivable")
-  const payables = allDebts.filter(d => d.type === "payable")
+  const creditCards = useMemo(() => cards.filter(c => c.type === "credit"), [cards])
+  const debitCards = useMemo(() => cards.filter(c => c.type === "debit"), [cards])
   
-  const totalReceivable = receivables.reduce((sum, d) => sum + (d.amount - d.amountPaid), 0)
-  const totalPayable = payables.reduce((sum, d) => sum + (d.amount - d.amountPaid), 0)
+  const totalCreditUsed = useMemo(() => 
+    creditCards.reduce((sum, c) => sum + (c.balance || 0), 0),
+    [creditCards]
+  )
+  
+  const totalCreditLimit = useMemo(() => 
+    creditCards.reduce((sum, c) => sum + (c.limit || 0), 0),
+    [creditCards]
+  )
+  
+  const totalCreditAvailable = totalCreditLimit - totalCreditUsed
+  const totalDebitBalance = useMemo(() => 
+    debitCards.reduce((sum, c) => sum + (c.balance || 0), 0),
+    [debitCards]
+  )
+
+  // Calcular deudas desde transacciones con split y debts collection
+  const splitExpenseDebts = useMemo(() => {
+    return transactions
+      .filter(t => t.isSplitExpense && t.splitDetails?.people)
+      .flatMap(t => 
+        t.splitDetails.people
+          .filter((p: any) => !p.paid)
+          .map((p: any) => ({
+            id: `${t.id}_${p.name}`,
+            type: "receivable" as const,
+            personName: p.name,
+            amount: p.amount,
+            amountPaid: 0,
+            concept: t.category || "Gasto dividido",
+            date: t.date?.toDate ? t.date.toDate() : new Date(t.date),
+            status: "pending" as const,
+            groupId: t.id
+          }))
+      )
+  }, [transactions])
+
+  const allDebts = useMemo(() => [...debts, ...splitExpenseDebts], [debts, splitExpenseDebts])
+  
+  const receivables = useMemo(() => 
+    allDebts.filter(d => d.type === "receivable"),
+    [allDebts]
+  )
+  
+  const payables = useMemo(() => 
+    allDebts.filter(d => d.type === "payable"),
+    [allDebts]
+  )
+  
+  const totalReceivable = useMemo(() => 
+    receivables.reduce((sum, d) => sum + ((d.amount || 0) - (d.amountPaid || 0)), 0),
+    [receivables]
+  )
+  
+  const totalPayable = useMemo(() => 
+    payables.reduce((sum, d) => sum + ((d.amount || 0) - (d.amountPaid || 0)), 0),
+    [payables]
+  )
 
   // Saldos
-  const realBalance = totalAccountsBalance + totalDebitBalance // Lo que realmente tienes
-  const availableBalance = realBalance - totalCreditUsed - totalPayable // Descontando lo que debes
-  const projectedBalance = availableBalance + totalReceivable // Si te pagaran todo
+  const realBalance = totalAccountsBalance + totalDebitBalance
+  const availableBalance = realBalance - totalCreditUsed - totalPayable
+  const projectedBalance = availableBalance + totalReceivable
 
   const getDebtStatusColor = (status: string) => {
     switch (status) {
@@ -238,6 +141,14 @@ export default function WalletPage() {
       case "partial": return <Clock className="h-4 w-4" />
       default: return <AlertCircle className="h-4 w-4" />
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
   }
 
   return (
@@ -357,7 +268,7 @@ export default function WalletPage() {
               <h2 className="text-xl font-bold">Cuentas Bancarias</h2>
               <Badge variant="secondary">{accounts.length}</Badge>
             </div>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => setIsAccountModalOpen(true)}>
               <Plus className="h-4 w-4" />
               Nueva Cuenta
             </Button>
@@ -387,17 +298,9 @@ export default function WalletPage() {
                           {account.accountNumber}
                         </p>
                         <Badge variant="secondary" className="mt-2 text-xs">
-                          {accountTypeLabels[account.type]}
+                          {accountTypeLabels[account.type as "checking" | "savings" | "investment"] || account.type}
                         </Badge>
                       </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -413,15 +316,9 @@ export default function WalletPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1 gap-2">
-                      <ArrowRightLeft className="h-4 w-4" />
-                      Transferir
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 gap-2">
-                      <Eye className="h-4 w-4" />
-                      Detalles
-                    </Button>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>Banco: {account.bank}</p>
+                    <p>Cuenta: {account.accountNumber}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -505,14 +402,9 @@ export default function WalletPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Badge variant={isCredit ? "destructive" : "secondary"}>
+                        {isCredit ? "Crédito" : "Débito"}
+                      </Badge>
                     </div>
                   </CardHeader>
 
@@ -621,35 +513,41 @@ export default function WalletPage() {
           </div>
 
           {/* Botón Dividir Gasto */}
-          <Button className="w-full gap-2" size="lg">
+          <Button 
+            className="w-full gap-2" 
+            size="lg"
+            onClick={() => setIsTransactionModalOpen(true)}
+          >
             <Users className="h-5 w-5" />
             Dividir Gasto entre Amigos
           </Button>
 
-          {/* Gastos Grupales */}
-          {groupExpenses.length > 0 && (
+          {/* Gastos Divididos desde Transacciones */}
+          {transactions.filter(t => t.isSplitExpense).length > 0 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Gastos Divididos</h3>
-              {groupExpenses.map((expense) => {
-                const totalRecovered = expense.debts.reduce((sum, d) => sum + d.amountPaid, 0)
-                const pendingCount = expense.debts.filter(d => d.status !== "paid").length
+              {transactions
+                .filter(t => t.isSplitExpense && t.splitDetails?.people)
+                .map((transaction) => {
+                  const people = transaction.splitDetails?.people || []
+                  const totalRecovered = people.reduce((sum: number, p: any) => 
+                    sum + (p.paid ? p.amount : 0), 0
+                  )
+                  const transDate = transaction.date?.toDate ? transaction.date.toDate() : new Date(transaction.date)
 
-                return (
-                  <Card key={expense.id} className="border-2">
+                  return (
+                    <Card key={transaction.id} className="border-2">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="flex items-center gap-2">
                             <Users className="h-5 w-5 text-primary" />
-                            {expense.concept}
+                            {transaction.category}
                           </CardTitle>
                           <CardDescription className="mt-1">
-                            Total: ${expense.totalAmount} • Pagaste tú • {format(expense.date, "d 'de' MMM", { locale: es })}
+                            Total: ${transaction.amount} • Pagaste tú • {format(transDate, "d 'de' MMM", { locale: es })}
                           </CardDescription>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Bell className="h-4 w-4" />
-                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -658,42 +556,51 @@ export default function WalletPage() {
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Recuperado</span>
                           <span className="font-medium">
-                            ${totalRecovered} / ${expense.totalAmount}
+                            ${totalRecovered} / ${transaction.amount}
                           </span>
                         </div>
-                        <Progress value={(totalRecovered / expense.totalAmount) * 100} className="h-2" />
+                        <Progress value={(totalRecovered / (transaction.amount || 1)) * 100} className="h-2" />
                       </div>
 
                       {/* Lista de personas */}
                       <div className="space-y-2">
-                        {expense.debts.map((debt) => (
+                        {people.map((person: any, idx: number) => (
                           <div 
-                            key={debt.id}
+                            key={`${transaction.id}_${idx}`}
                             className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                           >
                             <div className="flex items-center gap-3 flex-1">
-                              <div className={`${getDebtStatusColor(debt.status)}`}>
-                                {getDebtStatusIcon(debt.status)}
+                              <div className={`${person.paid ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                                {person.paid ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
                               </div>
                               <div className="flex-1">
-                                <p className="font-medium">{debt.personName}</p>
-                                {debt.status === "partial" && (
-                                  <p className="text-xs text-muted-foreground">
-                                    Pagó ${debt.amountPaid} de ${debt.amount}
-                                  </p>
-                                )}
+                                <p className="font-medium">{person.name}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
                               <p className={`text-lg font-bold ${
-                                debt.status === "paid" 
+                                person.paid 
                                   ? "text-green-600 dark:text-green-400 line-through" 
                                   : "text-foreground"
                               }`}>
-                                ${debt.amount}
+                                ${person.amount}
                               </p>
-                              {debt.status !== "paid" && (
-                                <Button variant="outline" size="sm">
+                              {!person.paid && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={async () => {
+                                    if (!user) return
+                                    try {
+                                      const { markSplitExpensePersonPaid } = await import("@/lib/firebase/collections")
+                                      await markSplitExpensePersonPaid(user.uid, transaction.id, person.name)
+                                      toast.success(`${person.name} marcado como pagado`)
+                                    } catch (error) {
+                                      console.error("Error:", error)
+                                      toast.error("Error al marcar como pagado")
+                                    }
+                                  }}
+                                >
                                   Pagó
                                 </Button>
                               )}
@@ -702,11 +609,10 @@ export default function WalletPage() {
                         ))}
                       </div>
 
-                      {pendingCount > 0 && (
-                        <Button variant="outline" className="w-full gap-2">
-                          <Bell className="h-4 w-4" />
-                          Recordar a {pendingCount} persona{pendingCount > 1 ? "s" : ""}
-                        </Button>
+                      {transaction.notes && (
+                        <p className="text-sm text-muted-foreground">
+                          Nota: {transaction.notes}
+                        </p>
                       )}
                     </CardContent>
                   </Card>
@@ -817,6 +723,19 @@ export default function WalletPage() {
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>
+      
+      {/* Modal de Nueva Transacción (Gasto Dividido) */}
+      <NewTransactionModal
+        open={isTransactionModalOpen}
+        onOpenChange={setIsTransactionModalOpen}
+        defaultType="expense"
+      />
+      
+      {/* Modal de Nueva Cuenta */}
+      <NewAccountModal
+        open={isAccountModalOpen}
+        onOpenChange={setIsAccountModalOpen}
+      />
     </div>
   )
 }

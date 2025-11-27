@@ -1,19 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Spinner } from "@/components/ui/spinner"
+import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/lib/hooks/useAuth"
+import { useFinancialSettings } from "@/lib/hooks/useFinancialSettings"
+import { createFinancialSettings } from "@/lib/firebase/collections"
 import { 
   DollarSign,
   TrendingUp,
   TrendingDown,
-  Save,
   Settings as SettingsIcon,
   Percent,
   Plus,
-  X
+  X,
+  Check,
+  Loader2
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -24,19 +30,83 @@ interface FixedExpense {
 }
 
 export default function SettingsPage() {
-  const [salary, setSalary] = useState("3500")
-  const [expectedSavings, setExpectedSavings] = useState("500")
+  const { user } = useAuth()
+  const { settings, loading } = useFinancialSettings()
+  
+  const [salary, setSalary] = useState("")
+  const [expectedSavings, setExpectedSavings] = useState("")
   const [savingsType, setSavingsType] = useState<"fixed" | "percentage">("fixed")
   const [savingsPercentage, setSavingsPercentage] = useState("15")
-  const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([
-    { id: 1, name: "Alquiler", amount: "800" },
-    { id: 2, name: "Servicios", amount: "200" },
-    { id: 3, name: "Internet", amount: "50" },
-  ])
+  const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([])
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+  const [shouldSaveOnTypeChange, setShouldSaveOnTypeChange] = useState(false)
 
-  const handleSave = () => {
-    toast.success("Configuración guardada exitosamente")
-  }
+  // Guardar cuando el usuario sale del input
+  const handleSave = useCallback(async () => {
+    if (!user) return
+    if (!salary || parseFloat(salary) <= 0) return
+
+    setSaveStatus("saving")
+
+    try {
+      const settingsData = {
+        monthlyIncome: parseFloat(salary),
+        fixedExpenses: fixedExpenses
+          .filter(exp => exp.name.trim() && parseFloat(exp.amount) > 0)
+          .map(exp => ({
+            id: `exp_${exp.id}`,
+            name: exp.name.trim(),
+            amount: parseFloat(exp.amount),
+            category: "Fijo"
+          })),
+        savingsGoal: {
+          type: savingsType,
+          amount: savingsType === "fixed" 
+            ? parseFloat(expectedSavings || "0") 
+            : parseFloat(savingsPercentage || "0")
+        }
+      }
+
+      await createFinancialSettings(user.uid, settingsData)
+      setSaveStatus("saved")
+      
+      // Volver a idle después de 2 segundos
+      setTimeout(() => setSaveStatus("idle"), 2000)
+    } catch (error) {
+      console.error("Error al guardar:", error)
+      toast.error("Error al guardar la configuración")
+      setSaveStatus("idle")
+    }
+  }, [user, salary, fixedExpenses, savingsType, expectedSavings, savingsPercentage])
+
+  // Cargar datos existentes
+  useEffect(() => {
+    if (settings) {
+      setSalary(settings.monthlyIncome?.toString() || "")
+      setFixedExpenses(settings.fixedExpenses?.map((exp: any, index: number) => ({
+        id: index + 1,
+        name: exp.name || "",
+        amount: exp.amount?.toString() || ""
+      })) || [])
+      
+      if (settings.savingsGoal) {
+        setSavingsType(settings.savingsGoal.type || "fixed")
+        if (settings.savingsGoal.type === "fixed") {
+          setExpectedSavings(settings.savingsGoal.amount?.toString() || "")
+        } else {
+          setSavingsPercentage(settings.savingsGoal.amount?.toString() || "15")
+        }
+      }
+    }
+  }, [settings])
+
+  // Auto-guardar cuando cambia el tipo de ahorro
+  useEffect(() => {
+    if (shouldSaveOnTypeChange && !loading) {
+      handleSave()
+      setShouldSaveOnTypeChange(false)
+    }
+  }, [savingsType, shouldSaveOnTypeChange, loading, handleSave])
 
   const addFixedExpense = () => {
     const newExpense = {
@@ -63,23 +133,55 @@ export default function SettingsPage() {
 
   // Calcular ahorro según el tipo
   const calculatedSavings = savingsType === "fixed" 
-    ? parseFloat(expectedSavings) 
-    : (parseFloat(salary) * parseFloat(savingsPercentage)) / 100
+    ? parseFloat(expectedSavings || "0") 
+    : (parseFloat(salary || "0") * parseFloat(savingsPercentage || "0")) / 100
 
-  const availableForDaily = parseFloat(salary) - totalFixedExpenses - calculatedSavings
-  const dailyBudget = availableForDaily / 30
+  const availableForDaily = parseFloat(salary || "0") - totalFixedExpenses - calculatedSavings
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
+  const dailyBudget = availableForDaily / daysInMonth
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-          <SettingsIcon className="h-7 w-7 text-primary" />
-          Configuración Financiera
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Define tu salario, gastos fijos y meta de ahorro
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <SettingsIcon className="h-7 w-7 text-primary" />
+            Configuración Financiera
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Define tu salario, gastos fijos y meta de ahorro
+          </p>
+        </div>
+        
+        {/* Indicador de guardado automático */}
+        <div className="flex items-center gap-2 text-sm">
+          {saveStatus === "saving" && (
+            <Badge variant="secondary" className="gap-1.5">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Guardando...
+            </Badge>
+          )}
+          {saveStatus === "saved" && (
+            <Badge variant="default" className="gap-1.5 bg-green-600">
+              <Check className="h-3 w-3" />
+              Guardado
+            </Badge>
+          )}
+          {saveStatus === "idle" && !loading && (
+            <Badge variant="outline" className="gap-1.5">
+              Auto-guardado activado
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Resumen */}
@@ -169,6 +271,7 @@ export default function SettingsPage() {
                   type="number"
                   value={salary}
                   onChange={(e) => setSalary(e.target.value)}
+                  onBlur={handleSave}
                   className="pl-7"
                 />
               </div>
@@ -202,6 +305,7 @@ export default function SettingsPage() {
                     placeholder="Nombre"
                     value={expense.name}
                     onChange={(e) => updateFixedExpense(expense.id, "name", e.target.value)}
+                    onBlur={handleSave}
                     className="h-9 text-sm"
                   />
                 </div>
@@ -215,6 +319,7 @@ export default function SettingsPage() {
                       placeholder="0"
                       value={expense.amount}
                       onChange={(e) => updateFixedExpense(expense.id, "amount", e.target.value)}
+                      onBlur={handleSave}
                       className="pl-5 h-9 text-sm"
                     />
                   </div>
@@ -251,7 +356,10 @@ export default function SettingsPage() {
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant={savingsType === "fixed" ? "default" : "outline"}
-                onClick={() => setSavingsType("fixed")}
+                onClick={() => {
+                  setSavingsType("fixed")
+                  setShouldSaveOnTypeChange(true)
+                }}
                 className="gap-2 h-9"
                 size="sm"
               >
@@ -260,12 +368,15 @@ export default function SettingsPage() {
               </Button>
               <Button
                 variant={savingsType === "percentage" ? "default" : "outline"}
-                onClick={() => setSavingsType("percentage")}
+                onClick={() => {
+                  setSavingsType("percentage")
+                  setShouldSaveOnTypeChange(true)
+                }}
                 className="gap-2 h-9"
                 size="sm"
               >
                 <Percent className="h-3 w-3" />
-                %
+                Porcentaje
               </Button>
             </div>
 
@@ -282,6 +393,7 @@ export default function SettingsPage() {
                     type="number"
                     value={expectedSavings}
                     onChange={(e) => setExpectedSavings(e.target.value)}
+                    onBlur={handleSave}
                     className="pl-7"
                   />
                 </div>
@@ -297,6 +409,7 @@ export default function SettingsPage() {
                     max="100"
                     value={savingsPercentage}
                     onChange={(e) => setSavingsPercentage(e.target.value)}
+                    onBlur={handleSave}
                     className="pr-7"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -342,14 +455,6 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Botón Guardar */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} size="lg" className="gap-2">
-          <Save className="h-4 w-4" />
-          Guardar Configuración
-        </Button>
-      </div>
 
       {/* Mobile bottom padding */}
       <div className="h-16 lg:hidden"></div>

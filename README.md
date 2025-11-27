@@ -19,11 +19,14 @@ Aplicación web de gestión financiera personal construida con Next.js, Firebase
 
 ### 🔴 Alta Prioridad
 - [ ] **Arreglar alineación del calendario en filtro personalizado**
-- [ ] **Conectar con datos reales de Firebase en todas las páginas**
-  - Transacciones reales
-  - Metas de ahorro funcionales
-  - Gastos divididos persistentes
-  - Balance y reportes con datos reales
+- [x] **Conectar con datos reales de Firebase** (Completado parcialmente)
+  - ✅ Dashboard (KPIs, gráficos, transacciones recientes)
+  - ✅ Gastos Diarios (calendario, resumen, lista de transacciones)
+  - ✅ Metas de Ahorro (lista y detalle)
+  - ✅ Configuración Financiera (crear/editar settings)
+  - ✅ Transacciones (lista completa, filtros, eliminar)
+  - ⏳ Billetera (cuentas, tarjetas, deudas) - **Pendiente**
+  - ✅ Reportes (usa datos reales de transacciones)
   
 ### 🟡 Media Prioridad
 - [ ] **Sistema de Notificaciones**

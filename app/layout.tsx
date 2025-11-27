@@ -6,6 +6,7 @@ import type React from "react"
 import { ClientWrapper } from "./components/ClientWrapper"
 import { Toaster } from "sonner"
 import { ConditionalLayout } from "./components/ConditionalLayout"
+import { LoadingBar } from "@/components/LoadingBar"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -50,11 +51,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/apple-icon.png',
-  },
   manifest: '/manifest.json',
 }
 
@@ -67,11 +63,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <LoadingBar />
           <ClientWrapper />
           <Toaster position="top-center" richColors />
           <div className="flex min-h-screen flex-col">
             <ConditionalLayout>
-              {children}
+                {children}
             </ConditionalLayout>
           </div>
         </ThemeProvider>
