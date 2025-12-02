@@ -7,6 +7,7 @@ import { ClientWrapper } from "./components/ClientWrapper"
 import { Toaster } from "sonner"
 import { ConditionalLayout } from "./components/ConditionalLayout"
 import { NavigationLoader } from "@/components/NavigationLoader"
+import ChatButton from "@/components/ChatButton"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -66,6 +67,7 @@ export default function RootLayout({
           <NavigationLoader />
           <ClientWrapper />
           <Toaster position="top-center" richColors />
+          <ChatButton />
           <div className="flex min-h-screen flex-col">
             <ConditionalLayout>
                 {children}

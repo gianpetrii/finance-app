@@ -260,7 +260,7 @@ export default function DailyExpensesPage() {
               {/* Grid del Calendario */}
               <div className="grid grid-cols-7 gap-2">
                 {/* Headers de días */}
-                {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
+                {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
                   <div key={day} className="text-center text-sm font-medium text-muted-foreground p-2">
                     {day}
                   </div>
@@ -268,7 +268,7 @@ export default function DailyExpensesPage() {
 
                 {/* Días del mes */}
                 {/* Espacios vacíos al inicio */}
-                {Array.from({ length: monthStart.getDay() }).map((_, i) => (
+                {Array.from({ length: (monthStart.getDay() + 6) % 7 }).map((_, i) => (
                   <div key={`empty-${i}`} />
                 ))}
 

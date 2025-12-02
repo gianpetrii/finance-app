@@ -82,7 +82,7 @@ export default function SettingsPage() {
       toast.error("Error al guardar la configuración")
       setSaveStatus("idle")
     }
-  }, [user, salary, fixedExpenses, savingsType, expectedSavings, savingsPercentage])
+  }, [user, salary, fixedExpenses, savingsType, expectedSavings, savingsPercentage, paymentDay, salaryDay])
 
   // Cargar datos existentes
   useEffect(() => {

@@ -14,6 +14,10 @@ Aplicación web de gestión financiera personal construida con Next.js, Firebase
 - ✅ Sistema de deudas (me deben / debo)
 - ✅ Configuración financiera personalizada
 - ✅ Diseño responsive y moderno
+- ✅ **Chat con Asistente Financiero IA** (OpenAI GPT-4o-mini)
+  - 🎤 Reconocimiento de voz (Speech-to-Text)
+  - 💬 Conversación natural en español
+  - 🤖 Function calling para acciones reales
 
 ## 📋 Funcionalidades Pendientes
 
@@ -37,12 +41,14 @@ Aplicación web de gestión financiera personal construida con Next.js, Firebase
   - Recordatorios personalizados
   - Notificaciones push
 
-- [ ] **Asistente Personal por Voz**
-  - Comunicación por voz
+- [x] **Asistente Financiero con IA** ✅
+  - Chat conversacional con OpenAI GPT-4o-mini
   - Acceso a toda la información financiera del usuario
-  - Registro de gastos e ingresos mediante voz
+  - Registro de gastos e ingresos mediante chat
   - Consultas sobre balance, presupuesto y metas
-  - Integración con IA (GPT-4 / Claude)
+  - Análisis de patrones de gasto
+  - Recomendaciones personalizadas
+  - [ ] Comunicación por voz (pendiente)
 
 - [ ] **Completar funcionalidad de Gastos Divididos**
   - Marcar pagos individuales
@@ -75,6 +81,7 @@ Aplicación web de gestión financiera personal construida con Next.js, Firebase
 - **UI**: Tailwind CSS + Shadcn UI
 - **Gráficos**: Recharts
 - **Notificaciones**: Sonner
+- **IA**: OpenAI GPT-4o-mini (Chat Financiero)
 
 ## 💻 Desarrollo
 
@@ -89,6 +96,7 @@ npm install
 Crear un archivo `.env.local` con:
 
 ```env
+# Firebase
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
@@ -96,6 +104,9 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# OpenAI (para el chat con IA)
+NEXT_PUBLIC_OPENAI_API_KEY=sk-your-openai-api-key
 ```
 
 ### Comandos
@@ -144,12 +155,61 @@ La aplicación se despliega automáticamente en Vercel al hacer push a la rama p
 2. Configurar las variables de entorno en Vercel
 3. Deploy automático en cada push
 
+## 🤖 Chat con Asistente Financiero
+
+El asistente financiero con IA te permite:
+
+### Funcionalidades
+- 🎤 **Reconocimiento de voz**: Habla directamente con el asistente (Web Speech API)
+- 💬 **Conversación natural**: Interactúa como lo harías con un asesor financiero
+- 💰 **Registrar transacciones**: "Registra un gasto de $500 en comida"
+- 📊 **Consultar información**: "¿Cuánto gasté este mes?"
+- 📈 **Análisis de gastos**: "Analiza mis gastos de la última semana"
+- 💡 **Recomendaciones**: Recibe consejos personalizados basados en tus finanzas
+- 🎯 **Consultar metas**: "¿Cómo va mi meta de ahorro?"
+- ⚡ **Transcripción en tiempo real**: Ve lo que dices mientras hablas
+
+### Ejemplos de uso
+
+**Por voz 🎤:**
+```
+Usuario: [Presiona micrófono] "Gasté quinientos pesos en comida hoy"
+Asistente: "✅ Perfecto! He registrado tu gasto de $500 en comida para hoy."
+
+Usuario: [Presiona micrófono] "Cuánto he gastado este mes"
+Asistente: "Este mes has gastado $4,500 en total, distribuido en..."
+```
+
+**Por texto ⌨️:**
+```
+Usuario: "Hola, ¿cuánto he gastado este mes?"
+Asistente: "Este mes has gastado $X en total, distribuido en..."
+
+Usuario: "Registra un gasto de $150 en transporte de hoy"
+Asistente: "¿Podrías darme más detalles? Por ejemplo, ¿fue taxi, Uber, o gasolina?"
+
+Usuario: "Analiza mis gastos de la última semana"
+Asistente: "En la última semana gastaste $X, siendo las categorías principales..."
+```
+
+### Configuración
+1. Obtén una API key de OpenAI en https://platform.openai.com/api-keys
+2. Agrégala a tu `.env.local` como `NEXT_PUBLIC_OPENAI_API_KEY`
+3. El chat aparecerá como un botón flotante en la esquina inferior derecha
+4. Para usar voz, acepta los permisos de micrófono cuando el navegador lo solicite
+5. Usa Chrome, Edge o Safari para mejor soporte de reconocimiento de voz
+
+### Compatibilidad de Navegadores
+- ✅ **Chrome/Edge**: Soporte completo (texto + voz)
+- ✅ **Safari**: Soporte completo (texto + voz)
+- ⚠️ **Firefox**: Solo texto (sin reconocimiento de voz)
+- ⚠️ **Otros**: Solo texto
+
 ## 📝 Notas de Desarrollo
 
 - El calendario del filtro personalizado necesita ajustes de alineación
-- Los datos actuales son simulados (mock data)
 - El sistema de notificaciones está planificado pero no implementado
-- El asistente por voz es una funcionalidad futura prioritaria
+- La funcionalidad de voz para el asistente está pendiente
 
 ## 🤝 Contribuciones
 
