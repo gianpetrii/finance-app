@@ -105,8 +105,8 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
-# OpenAI (para el chat con IA)
-NEXT_PUBLIC_OPENAI_API_KEY=sk-your-openai-api-key
+# OpenAI (para el chat con IA) - SOLO en servidor, NO expuesta al cliente
+OPENAI_API_KEY=sk-your-openai-api-key
 ```
 
 ### Comandos
@@ -194,10 +194,11 @@ Asistente: "En la última semana gastaste $X, siendo las categorías principales
 
 ### Configuración
 1. Obtén una API key de OpenAI en https://platform.openai.com/api-keys
-2. Agrégala a tu `.env.local` como `NEXT_PUBLIC_OPENAI_API_KEY`
-3. El chat aparecerá como un botón flotante en la esquina inferior derecha
-4. Para usar voz, acepta los permisos de micrófono cuando el navegador lo solicite
-5. Usa Chrome, Edge o Safari para mejor soporte de reconocimiento de voz
+2. Agrégala a tu `.env.local` como `OPENAI_API_KEY` (sin `NEXT_PUBLIC_` para mayor seguridad)
+3. En Vercel, agrega la variable de entorno `OPENAI_API_KEY` en Settings → Environment Variables
+4. El chat aparecerá como un botón flotante en la esquina inferior derecha
+5. Para usar voz, acepta los permisos de micrófono cuando el navegador lo solicite
+6. Usa Chrome, Edge o Safari para mejor soporte de reconocimiento de voz
 
 ### Compatibilidad de Navegadores
 - ✅ **Chrome/Edge**: Soporte completo (texto + voz)

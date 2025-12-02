@@ -105,8 +105,11 @@ El chat aparece como un **botón flotante** con un ícono de mensaje en la **esq
 
 ### Variables de Entorno Requeridas
 ```env
-NEXT_PUBLIC_OPENAI_API_KEY=sk-your-openai-api-key
+# Solo en servidor (más seguro)
+OPENAI_API_KEY=sk-your-openai-api-key
 ```
+
+**Nota de Seguridad**: La API key ahora solo se usa en el servidor (API routes), no se expone al cliente.
 
 ### Obtener API Key de OpenAI
 1. Ve a https://platform.openai.com/signup
@@ -127,7 +130,8 @@ NEXT_PUBLIC_OPENAI_API_KEY=sk-your-openai-api-key
 - ✅ No comparte información entre usuarios
 - ✅ Las conversaciones no se almacenan permanentemente
 - ✅ Requiere autenticación de Firebase para funcionar
-- ⚠️ La API key está en el cliente (NEXT_PUBLIC_*) - para producción, considera moverla a una API route
+- ✅ La API key está protegida en el servidor (no expuesta al cliente)
+- ✅ Todas las llamadas a OpenAI se hacen desde el backend
 
 ## 🎤 Cómo Usar el Reconocimiento de Voz
 
