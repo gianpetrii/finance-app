@@ -28,6 +28,7 @@ export function NewGoalModal({ open, onOpenChange }: NewGoalModalProps) {
   const [category, setCategory] = useState("purchase")
   const [description, setDescription] = useState("")
   const [targetDate, setTargetDate] = useState<Date>()
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const resetForm = () => {
@@ -141,7 +142,7 @@ export function NewGoalModal({ open, onOpenChange }: NewGoalModalProps) {
           {/* Fecha Objetivo */}
           <div className="space-y-2">
             <Label>Fecha Objetivo</Label>
-            <Popover>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -155,7 +156,12 @@ export function NewGoalModal({ open, onOpenChange }: NewGoalModalProps) {
                 <Calendar
                   mode="single"
                   selected={targetDate}
-                  onSelect={setTargetDate}
+                  onSelect={(newDate) => {
+                    setTargetDate(newDate)
+                    if (newDate) {
+                      setDatePickerOpen(false)
+                    }
+                  }}
                   disabled={(date) => date < new Date()}
                   initialFocus
                 />

@@ -162,7 +162,7 @@
   color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: lowercase;
   padding: 0.5rem 0;
 }
 

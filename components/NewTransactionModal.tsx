@@ -71,6 +71,7 @@ export function NewTransactionModal({
   const [category, setCategory] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("")
   const [date, setDate] = useState<Date>(new Date())
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [notes, setNotes] = useState("")
   const [isSplitExpense, setIsSplitExpense] = useState(false)
   const [splitType, setSplitType] = useState<"equal" | "custom">("equal")
@@ -341,7 +342,7 @@ export function NewTransactionModal({
           {/* Fecha */}
           <div className="space-y-2">
             <Label>Fecha *</Label>
-            <Popover>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
                   type="button"
@@ -359,7 +360,12 @@ export function NewTransactionModal({
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  onSelect={(newDate) => {
+                    if (newDate) {
+                      setDate(newDate)
+                      setDatePickerOpen(false)
+                    }
+                  }}
                   initialFocus
                 />
               </PopoverContent>
