@@ -2,93 +2,113 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    'X-Title': 'Finance App',
+  },
 });
 
-// Definir las funciones que la IA puede llamar
-const functions = [
+// Definir las herramientas (tools) que la IA puede llamar
+const tools = [
   {
-    name: 'get_transactions',
-    description: 'Obtiene las transacciones del usuario filtradas por fecha o categoría',
-    parameters: {
-      type: 'object',
-      properties: {
-        startDate: {
-          type: 'string',
-          description: 'Fecha de inicio en formato ISO (opcional)',
-        },
-        endDate: {
-          type: 'string',
-          description: 'Fecha de fin en formato ISO (opcional)',
-        },
-        type: {
-          type: 'string',
-          enum: ['expense', 'income'],
-          description: 'Tipo de transacción (opcional)',
+    type: 'function' as const,
+    function: {
+      name: 'get_transactions',
+      description: 'Obtiene las transacciones del usuario filtradas por fecha o categoría',
+      parameters: {
+        type: 'object',
+        properties: {
+          startDate: {
+            type: 'string',
+            description: 'Fecha de inicio en formato ISO (opcional)',
+          },
+          endDate: {
+            type: 'string',
+            description: 'Fecha de fin en formato ISO (opcional)',
+          },
+          type: {
+            type: 'string',
+            enum: ['expense', 'income'],
+            description: 'Tipo de transacción (opcional)',
+          },
         },
       },
     },
   },
   {
-    name: 'create_transaction',
-    description: 'Crea una nueva transacción (gasto o ingreso)',
-    parameters: {
-      type: 'object',
-      properties: {
-        type: {
-          type: 'string',
-          enum: ['expense', 'income'],
-          description: 'Tipo de transacción',
+    type: 'function' as const,
+    function: {
+      name: 'create_transaction',
+      description: 'Crea una nueva transacción (gasto o ingreso)',
+      parameters: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            enum: ['expense', 'income'],
+            description: 'Tipo de transacción',
+          },
+          amount: {
+            type: 'number',
+            description: 'Monto de la transacción',
+          },
+          category: {
+            type: 'string',
+            description: 'Categoría de la transacción',
+          },
+          description: {
+            type: 'string',
+            description: 'Descripción de la transacción',
+          },
+          date: {
+            type: 'string',
+            description: 'Fecha de la transacción en formato ISO (opcional, por defecto hoy)',
+          },
         },
-        amount: {
-          type: 'number',
-          description: 'Monto de la transacción',
-        },
-        category: {
-          type: 'string',
-          description: 'Categoría de la transacción',
-        },
-        description: {
-          type: 'string',
-          description: 'Descripción de la transacción',
-        },
-        date: {
-          type: 'string',
-          description: 'Fecha de la transacción en formato ISO (opcional, por defecto hoy)',
-        },
+        required: ['type', 'amount', 'category', 'description'],
       },
-      required: ['type', 'amount', 'category', 'description'],
     },
   },
   {
-    name: 'get_budget_summary',
-    description: 'Obtiene un resumen del presupuesto y gastos actuales del usuario',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'get_savings_goals',
-    description: 'Obtiene las metas de ahorro del usuario',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
-  },
-  {
-    name: 'analyze_spending',
-    description: 'Analiza los patrones de gasto del usuario en un período',
-    parameters: {
-      type: 'object',
-      properties: {
-        period: {
-          type: 'string',
-          enum: ['week', 'month', 'year'],
-          description: 'Período a analizar',
-        },
+    type: 'function' as const,
+    function: {
+      name: 'get_budget_summary',
+      description: 'Obtiene un resumen del presupuesto y gastos actuales del usuario',
+      parameters: {
+        type: 'object',
+        properties: {},
       },
-      required: ['period'],
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'get_savings_goals',
+      description: 'Obtiene las metas de ahorro del usuario',
+      parameters: {
+        type: 'object',
+        properties: {},
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'analyze_spending',
+      description: 'Analiza los patrones de gasto del usuario en un período',
+      parameters: {
+        type: 'object',
+        properties: {
+          period: {
+            type: 'string',
+            enum: ['week', 'month', 'year'],
+            description: 'Período a analizar',
+          },
+        },
+        required: ['period'],
+      },
     },
   },
 ];
@@ -107,56 +127,63 @@ export async function POST(req: NextRequest) {
     // Crear el mensaje del sistema con contexto
     const systemMessage = {
       role: 'system',
-      content: `Eres un asistente financiero personal inteligente y amigable. Tu nombre es "Asesor Financiero".
+      content: `Eres un asistente financiero personal inteligente y amigable llamado "Asesor Financiero".
 
-Ayudas a los usuarios a:
-- Registrar gastos e ingresos de forma conversacional
-- Consultar su información financiera
-- Analizar sus patrones de gasto
-- Dar consejos y recomendaciones personalizadas
-- Responder preguntas sobre sus finanzas
+Tu propósito es ayudar a los usuarios con sus finanzas personales:
+- Responder preguntas sobre finanzas personales
+- Dar consejos sobre ahorro y presupuesto
+- Explicar conceptos financieros de forma clara
+- Sugerir estrategias para mejorar la salud financiera
+- Ayudar a planificar metas financieras
 
 Características importantes:
 - Hablas en español de forma natural y cercana
-- Eres proactivo sugiriendo mejoras
-- Confirmas las acciones antes de ejecutarlas
-- Explicas los análisis de forma clara
-- Usas emojis ocasionalmente para ser más amigable (💰 💵 📊 📈 ✅)
+- Eres proactivo sugiriendo mejoras y consejos
+- Explicas conceptos complejos de forma simple
+- Usas emojis ocasionalmente para ser más amigable (💰 💵 📊 📈 ✅ 🎯)
+- Eres positivo y motivador
 
-Cuando el usuario te pida registrar un gasto o ingreso:
-1. Extrae la información (monto, categoría, descripción)
-2. Si falta información, pregunta de forma natural
-3. Confirma antes de crear la transacción
-4. Usa la función create_transaction cuando tengas todo
+Cuando el usuario te pregunte sobre:
+- **Ahorro**: Sugiere la regla 50/30/20, fondos de emergencia, etc.
+- **Presupuesto**: Recomienda categorizar gastos, establecer límites, revisar mensualmente
+- **Deudas**: Aconseja métodos como bola de nieve o avalancha
+- **Inversión**: Explica conceptos básicos, diversificación, riesgo vs retorno
+- **Metas**: Ayuda a establecer metas SMART (específicas, medibles, alcanzables, relevantes, temporales)
 
-Categorías válidas para gastos: food, transport, entertainment, health, education, shopping, bills, other
-Categorías válidas para ingresos: salary, freelance, investment, gift, other
+Nota: Actualmente no puedes acceder a los datos financieros del usuario ni crear transacciones directamente. 
+Guía al usuario para que use las funciones de la app (Dashboard, Transacciones, Metas, etc.) mientras le das consejos útiles.
 
-Siempre sé útil, claro y positivo.`,
+Siempre sé útil, claro, positivo y educativo.`,
     };
 
-    // Llamar a OpenAI con function calling
+    // Verificar si el modelo soporta tool calling
+    const modelSupportsTools = process.env.OPENROUTER_SUPPORTS_TOOLS === 'true';
+
+    // Llamar a OpenRouter
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: process.env.OPENROUTER_MODEL || 'deepseek/deepseek-r1-0528:free',
       messages: [systemMessage, ...messages],
-      functions: functions,
-      function_call: 'auto',
+      ...(modelSupportsTools && { tools: tools, tool_choice: 'auto' }),
       temperature: 0.7,
       max_tokens: 500,
     });
 
     const assistantMessage = response.choices[0].message;
 
-    // Si la IA quiere llamar a una función
-    if (assistantMessage.function_call) {
-      return NextResponse.json({
-        message: assistantMessage,
-        needsFunctionCall: true,
-        functionCall: {
-          name: assistantMessage.function_call.name,
-          arguments: JSON.parse(assistantMessage.function_call.arguments),
-        },
-      });
+    // Si el modelo soporta tools y la IA quiere llamar a una herramienta
+    if (modelSupportsTools && assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
+      const toolCall = assistantMessage.tool_calls[0];
+      // Verificar que sea un tool call de función
+      if (toolCall.type === 'function' && 'function' in toolCall) {
+        return NextResponse.json({
+          message: assistantMessage,
+          needsFunctionCall: true,
+          functionCall: {
+            name: toolCall.function.name,
+            arguments: JSON.parse(toolCall.function.arguments),
+          },
+        });
+      }
     }
 
     // Respuesta normal
