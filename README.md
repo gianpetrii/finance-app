@@ -14,10 +14,11 @@ Aplicación web de gestión financiera personal construida con Next.js, Firebase
 - ✅ Sistema de deudas (me deben / debo)
 - ✅ Configuración financiera personalizada
 - ✅ Diseño responsive y moderno
-- ✅ **Chat con Asistente Financiero IA** (OpenAI GPT-4o-mini)
-  - 🎤 Reconocimiento de voz (Speech-to-Text)
+- ✅ **Chat con Asistente Financiero IA** (OpenRouter)
   - 💬 Conversación natural en español
-  - 🤖 Function calling para acciones reales
+  - 🆓 Modo gratuito: Consejos y educación financiera
+  - 💰 Modo de pago: Function calling para acciones reales
+  - 🔄 Fácil cambio entre modelos
 
 ## 📋 Funcionalidades Pendientes
 
@@ -81,7 +82,7 @@ Aplicación web de gestión financiera personal construida con Next.js, Firebase
 - **UI**: Tailwind CSS + Shadcn UI
 - **Gráficos**: Recharts
 - **Notificaciones**: Sonner
-- **IA**: OpenAI GPT-4o-mini (Chat Financiero)
+- **IA**: OpenRouter (Chat Financiero con múltiples modelos)
 
 ## 💻 Desarrollo
 
@@ -105,9 +106,13 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
-# OpenAI (para el chat con IA) - SOLO en servidor, NO expuesta al cliente
-OPENAI_API_KEY=sk-your-openai-api-key
+# OpenRouter (para el chat con IA)
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_MODEL=deepseek/deepseek-r1-0528:free
+OPENROUTER_SUPPORTS_TOOLS=false
 ```
+
+Ver [CHATBOT_CONFIG.md](./CHATBOT_CONFIG.md) para configuración detallada del chatbot.
 
 ### Comandos
 
@@ -192,19 +197,35 @@ Usuario: "Analiza mis gastos de la última semana"
 Asistente: "En la última semana gastaste $X, siendo las categorías principales..."
 ```
 
-### Configuración
-1. Obtén una API key de OpenAI en https://platform.openai.com/api-keys
-2. Agrégala a tu `.env.local` como `OPENAI_API_KEY` (sin `NEXT_PUBLIC_` para mayor seguridad)
-3. En Vercel, agrega la variable de entorno `OPENAI_API_KEY` en Settings → Environment Variables
-4. El chat aparecerá como un botón flotante en la esquina inferior derecha
-5. Para usar voz, acepta los permisos de micrófono cuando el navegador lo solicite
-6. Usa Chrome, Edge o Safari para mejor soporte de reconocimiento de voz
+### Configuración Rápida
 
-### Compatibilidad de Navegadores
-- ✅ **Chrome/Edge**: Soporte completo (texto + voz)
-- ✅ **Safari**: Soporte completo (texto + voz)
-- ⚠️ **Firefox**: Solo texto (sin reconocimiento de voz)
-- ⚠️ **Otros**: Solo texto
+**Modo Desarrollo (Gratis)**:
+```bash
+OPENROUTER_API_KEY=tu_api_key
+OPENROUTER_MODEL=deepseek/deepseek-r1-0528:free
+OPENROUTER_SUPPORTS_TOOLS=false
+```
+
+**Modo Producción (De Pago)**:
+```bash
+OPENROUTER_API_KEY=tu_api_key
+OPENROUTER_MODEL=openai/gpt-4o-mini
+OPENROUTER_SUPPORTS_TOOLS=true
+```
+
+📖 **Guía Completa**: Ver [CHATBOT_CONFIG.md](./CHATBOT_CONFIG.md) para instrucciones detalladas
+
+### Diferencias Entre Modos
+
+| Característica | Modo Gratis | Modo Pago |
+|---|---|---|
+| Consejos financieros | ✅ | ✅ |
+| Responder preguntas | ✅ | ✅ |
+| Explicar conceptos | ✅ | ✅ |
+| Crear transacciones | ❌ | ✅ |
+| Consultar datos | ❌ | ✅ |
+| Análisis de gastos | ❌ | ✅ |
+| Costo | $0 | ~$0.01/100 msgs |
 
 ## 📝 Notas de Desarrollo
 
