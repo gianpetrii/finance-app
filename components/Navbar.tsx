@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu, X, Wallet, Bell, Settings, LogOut, User } from "lucide-react";
-import { ThemeToggle } from "@/app/components/ThemeToggle";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -95,8 +94,6 @@ export function Navbar() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-3">
-            <ThemeToggle />
-
             {loading ? (
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             ) : user ? (

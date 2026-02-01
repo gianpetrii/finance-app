@@ -112,8 +112,6 @@ OPENROUTER_MODEL=deepseek/deepseek-r1-0528:free
 OPENROUTER_SUPPORTS_TOOLS=false
 ```
 
-Ver [CHATBOT_CONFIG.md](./CHATBOT_CONFIG.md) para configuración detallada del chatbot.
-
 ### Comandos
 
 ```bash
@@ -197,27 +195,37 @@ Usuario: "Analiza mis gastos de la última semana"
 Asistente: "En la última semana gastaste $X, siendo las categorías principales..."
 ```
 
-### Configuración Rápida
+### Configuración
 
-**Modo Desarrollo (Gratis)**:
+#### Paso 1: Obtener API Key de OpenRouter
+1. Ve a [OpenRouter](https://openrouter.ai/)
+2. Crea una cuenta y genera una API Key
+3. Agrégala a tu `.env.local`
+
+#### Paso 2: Elegir Modo de Operación
+
+**Modo Desarrollo (Gratis)** - Solo consejos:
 ```bash
 OPENROUTER_API_KEY=tu_api_key
 OPENROUTER_MODEL=deepseek/deepseek-r1-0528:free
 OPENROUTER_SUPPORTS_TOOLS=false
 ```
 
-**Modo Producción (De Pago)**:
+**Modo Producción (De Pago)** - Funcionalidad completa:
 ```bash
 OPENROUTER_API_KEY=tu_api_key
 OPENROUTER_MODEL=openai/gpt-4o-mini
 OPENROUTER_SUPPORTS_TOOLS=true
 ```
 
-📖 **Guía Completa**: Ver [CHATBOT_CONFIG.md](./CHATBOT_CONFIG.md) para instrucciones detalladas
+#### Paso 3: Reiniciar el servidor
+```bash
+npm run dev
+```
 
 ### Diferencias Entre Modos
 
-| Característica | Modo Gratis | Modo Pago |
+| Característica | Gratis | Pago |
 |---|---|---|
 | Consejos financieros | ✅ | ✅ |
 | Responder preguntas | ✅ | ✅ |
@@ -227,11 +235,26 @@ OPENROUTER_SUPPORTS_TOOLS=true
 | Análisis de gastos | ❌ | ✅ |
 | Costo | $0 | ~$0.01/100 msgs |
 
-## 📝 Notas de Desarrollo
+**Modelos Recomendados:**
+- Gratis: `deepseek/deepseek-r1-0528:free`, `meta-llama/llama-3.2-3b-instruct:free`
+- Pago: `openai/gpt-4o-mini`, `anthropic/claude-3-haiku`
 
-- El calendario del filtro personalizado necesita ajustes de alineación
-- El sistema de notificaciones está planificado pero no implementado
-- La funcionalidad de voz para el asistente está pendiente
+Ver más modelos en [OpenRouter Models](https://openrouter.ai/models)
+
+## 🆘 Solución de Problemas
+
+### El chatbot no responde
+1. Verifica que `OPENROUTER_API_KEY` esté configurada correctamente
+2. Reinicia el servidor después de cambiar `.env.local`
+3. Revisa la consola del navegador para errores
+
+### Error: "No endpoints found that support tool use"
+- Estás usando un modelo gratuito con `OPENROUTER_SUPPORTS_TOOLS=true`
+- Solución: Cambia a `OPENROUTER_SUPPORTS_TOOLS=false`
+
+### El chatbot no puede crear transacciones
+- Esto es normal en modo desarrollo (gratuito)
+- Para habilitar esta función, cambia a modo producción con un modelo de pago
 
 ## 🤝 Contribuciones
 
